@@ -1,0 +1,45 @@
+ion-content {
+  --padding-top: 20px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  background: var(--ion-background-color);
+}
+
+ion-list {
+  background: transparent;
+
+  ion-item {
+    --background: var(--ion-item-background);
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+    ion-label {
+      font-size: 16px;
+      color: var(--ion-text-color);
+    }
+
+    ion-toggle {
+      margin-left: auto;
+    }
+
+    ion-select {
+      width: 100%;
+    }
+  }
+}
+
+// Touch targets: rows, toggle and select are at least 44px tall
+ion-list ion-item {
+  --min-height: 56px;
+  --border-radius: var(--app-radius-card);
+  border-radius: var(--app-radius-card);
+  margin-bottom: var(--app-space-3);
+
+  ion-toggle,
+  ion-select {
+    min-height: 44px;
+  }
+}

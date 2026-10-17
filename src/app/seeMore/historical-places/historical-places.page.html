@@ -1,0 +1,27 @@
+<ion-content class="ion-padding page-bg">
+
+  <!-- Custom Header -->
+  <div class="custom-header">
+    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+    <h1 class="page-title">Historical Places</h1>
+  </div>
+
+  <!-- Loading Spinner -->
+  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
+
+  <!-- Events Grid -->
+  <div class="places-grid" *ngIf="!loading">
+    <ion-card
+      class="place-card"
+      *ngFor="let place of places"
+      (click)="openPlace(place.id)"
+      [style.background-image]="'url(' + place.imgPath + ')'"
+    >
+      <div class="overlay"></div>
+      <div class="place-title">{{ place.name }}</div>
+    </ion-card>
+  </div>
+
+</ion-content>

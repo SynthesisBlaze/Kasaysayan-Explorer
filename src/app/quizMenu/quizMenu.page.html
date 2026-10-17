@@ -1,0 +1,52 @@
+<app-app-bar title="Quiz"></app-app-bar>
+
+<ion-content [fullscreen]="true">
+  <div class="container">
+
+    <p class="intro">Pick a topic and test what you know.</p>
+
+    <section class="group" *ngFor="let group of groups">
+      <div class="group-head">
+        <h2 class="group-title">{{ group.label }}</h2>
+        <span class="group-meta">{{ group.meta }}</span>
+      </div>
+
+      <button type="button" class="quiz-row" *ngFor="let key of group.keys" (click)="openCategoryDialog(key)">
+        <span class="row-icon"><ion-icon [name]="info(key).icon"></ion-icon></span>
+        <span class="row-text">
+          <span class="row-title">{{ rowTitles[key] }}</span>
+          <span class="row-sub">{{ info(key).subtitle }}</span>
+        </span>
+        <ion-icon name="chevron-forward-outline" class="row-chevron" aria-hidden="true"></ion-icon>
+      </button>
+    </section>
+
+  </div>
+</ion-content>
+
+<!-- Quiz details: bottom-sheet modal (replaces the old alert) -->
+<ion-modal class="quiz-modal" [isOpen]="isModalOpen" (didDismiss)="closeModal()"
+  [initialBreakpoint]="0.42" [breakpoints]="[0, 0.42, 0.8]" [backdropBreakpoint]="0">
+  <ng-template>
+    <ion-content>
+      <div class="modal-body" *ngIf="selected as q">
+        <div class="modal-icon"><ion-icon [name]="q.icon"></ion-icon></div>
+        <h2 class="modal-title">{{ q.title }}</h2>
+        <p class="modal-text">{{ q.instruction }}</p>
+
+        <ul class="modal-facts">
+          <li>{{ q.questions }} questions</li>
+          <li>{{ q.type }}</li>
+        </ul>
+
+        <div class="modal-actions">
+          <ion-button class="modal-cancel" fill="outline" (click)="closeModal()">Cancel</ion-button>
+          <ion-button class="modal-start" (click)="confirmStart()">
+            <ion-icon slot="start" name="play-outline"></ion-icon>
+            Start Quiz
+          </ion-button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

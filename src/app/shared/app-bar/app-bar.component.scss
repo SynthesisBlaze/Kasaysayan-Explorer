@@ -1,0 +1,46 @@
+ion-toolbar {
+  --background: var(--ion-toolbar-background);
+  --color: var(--ion-toolbar-color);
+  --border-color: transparent;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+// App bar title styling
+ion-title.page-title {
+  color: var(--ion-text-color);
+  font-weight: bold;
+  font-size: 32px;
+  margin: 20px 16px 10px 0;
+  padding: 0;
+}
+
+// Back button styling
+ion-back-button {
+  --color: var(--ion-toolbar-color);
+  --color-hover: var(--ion-color-primary);
+  --color-focused: var(--ion-color-primary);
+  --color-activated: var(--ion-color-primary);
+  --icon-font-size: 24px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  
+  &::part(icon) {
+    font-size: 24px;
+  }
+}
+
+// Toolbar buttons (if you have any)
+ion-button {
+  --color: var(--ion-toolbar-color);
+  --color-hover: var(--ion-color-primary);
+  --color-activated: var(--ion-color-primary);
+}
+
+// Menu button or other toolbar icons
+ion-icon {
+  color: var(--ion-toolbar-color);
+  font-size: 24px;
+}

@@ -1,0 +1,123 @@
+/* ============================================================================
+ * STYLE GUIDE (design tokens) — use these instead of hard-coded values
+ * ----------------------------------------------------------------------------
+ * Font    : ONE family for the whole app (--app-font). No per-page font-family.
+ * Type    : caption 12 · body-sm 14 · body 16 · title 20 · heading 24 · display 32
+ * Spacing : 4-pt scale (4 / 8 / 12 / 16 / 24 / 32)
+ * Radius  : cards 12 · buttons 12 · pills/inputs 999 · small chips 8
+ * Touch   : every tappable element is at least 44 x 44 px
+ * ========================================================================== */
+:root {
+  --app-font: Georgia, "Times New Roman", Times, serif;
+  --ion-font-family: var(--app-font);
+
+  --app-fs-caption: 12px;
+  --app-fs-body-sm: 14px;
+  --app-fs-body: 16px;
+  --app-fs-title: 20px;
+  --app-fs-heading: 24px;
+  --app-fs-display: 32px;
+
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-6: 24px;
+  --app-space-8: 32px;
+
+  --app-radius-card: 12px;
+  --app-radius-button: 12px;
+  --app-radius-sm: 8px;
+  --app-radius-pill: 999px;
+
+  --app-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --app-touch-min: 44px;
+}
+
+// Light theme - Clean white with dark green accents
+body.light-theme {
+  --ion-color-primary: #2d5016 !important; // Dark green
+  --ion-color-primary-rgb: 45, 80, 22 !important;
+  --ion-color-primary-contrast: #ffffff !important;
+  --ion-color-primary-contrast-rgb: 255, 255, 255 !important;
+  --ion-background-color: #FFFFFF !important; // Pure white
+  --ion-background-color-rgb: 255, 255, 255 !important;
+  --ion-text-color: #1a1a1a !important; // Almost black
+  --ion-text-color-rgb: 26, 26, 26 !important;
+  --ion-toolbar-background: #f8f9fa !important; // Off-white
+  --ion-toolbar-color: #2d5016 !important; // Dark green
+  --ion-item-background: #f1f3f4 !important; // Light gray
+  --ion-card-background: #FFFFFF !important; // White cards
+  --ion-color-step-50: #f8f9fa !important;
+  --ion-color-step-100: #f1f3f4 !important;
+  --ion-color-step-150: #e8eaed !important;
+  --ion-color-step-200: #dadce0 !important;
+  --ion-color-step-300: #bdc1c6 !important;
+  --ion-color-step-700: #5f6368 !important;
+}
+
+// Dark theme - Deep black with dark green accents
+body.dark-theme {
+  --ion-color-primary: #6b9a4a !important; // Medium green
+  --ion-color-primary-rgb: 107, 154, 74 !important;
+  --ion-color-primary-contrast: #000000 !important;
+  --ion-color-primary-contrast-rgb: 0, 0, 0 !important;
+  --ion-background-color: #000000 !important; // Pure black
+  --ion-background-color-rgb: 0, 0, 0 !important;
+  --ion-text-color: #FFFFFF !important; // Pure white
+  --ion-text-color-rgb: 255, 255, 255 !important;
+  --ion-toolbar-background: #0a0a0a !important; // Almost black
+  --ion-toolbar-color: #6b9a4a !important; // Medium green
+  --ion-item-background: #1a1a1a !important; // Dark gray
+  --ion-card-background: #121212 !important; // Very dark gray
+  --ion-color-step-50: #0d0d0d !important;
+  --ion-color-step-100: #1a1a1a !important;
+  --ion-color-step-150: #262626 !important;
+  --ion-color-step-200: #333333 !important;
+  --ion-color-step-300: #4d4d4d !important;
+  --ion-color-step-700: #b3b3b3 !important;
+}
+
+// Default theme - Your custom green palette
+body:not(.light-theme):not(.dark-theme):not(.color-blind-theme) {
+  --ion-color-primary: #DCD7C9 !important;
+  --ion-color-primary-rgb: 220, 215, 201 !important;
+  --ion-color-primary-contrast: #36433A !important;
+  --ion-color-primary-contrast-rgb: 54, 67, 58 !important;
+  --ion-background-color: #36433A !important;
+  --ion-background-color-rgb: 54, 67, 58 !important;
+  --ion-text-color: #DCD7C9 !important;
+  --ion-text-color-rgb: 220, 215, 201 !important;
+  --ion-toolbar-background: #36433A !important;
+  --ion-toolbar-color: #DCD7C9 !important;
+  --ion-item-background: #3d4f50 !important;
+  --ion-card-background: #3d4f50 !important;
+  --ion-color-step-50: #3d4a42 !important;
+  --ion-color-step-100: #44514a !important;
+  --ion-color-step-150: #4b5852 !important;
+  --ion-color-step-200: #525f5a !important;
+  --ion-color-step-300: #596662 !important;
+  --ion-color-step-700: #B9B6B6 !important;
+}
+
+// Color Blind Mode - Based on image 3 palette
+body.color-blind-theme {
+  --ion-color-primary: #F2D090 !important;
+  --ion-color-primary-rgb: 242, 208, 144 !important;
+  --ion-color-primary-contrast: #324376 !important;
+  --ion-color-primary-contrast-rgb: 50, 67, 118 !important;
+  --ion-background-color: #324376 !important;
+  --ion-background-color-rgb: 50, 67, 118 !important;
+  --ion-text-color: #FFFFFF !important;
+  --ion-text-color-rgb: 255, 255, 255 !important;
+  --ion-toolbar-background: #586BA4 !important;
+  --ion-toolbar-color: #F2D090 !important;
+  --ion-item-background: #586BA4 !important;
+  --ion-card-background: #586BA4 !important;
+  --ion-color-step-50: #3E5285 !important;
+  --ion-color-step-100: #4A5D92 !important;
+  --ion-color-step-150: #586BA4 !important;
+  --ion-color-step-200: #6679B0 !important;
+  --ion-color-step-300: #F48B5F !important;
+  --ion-color-step-700: #F2D090 !important;
+}

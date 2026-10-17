@@ -1,0 +1,175 @@
+<ion-content [fullscreen]="true" class="quiz-content">
+
+  <!-- ===================== QUESTION ===================== -->
+  <div class="screen" *ngIf="!showResults && currentQuestion">
+
+    <header class="topbar">
+      <button type="button" class="icon-btn" aria-label="Exit quiz" (click)="confirmExitQuiz()">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="topbar-title" aria-live="polite">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</div>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="segments" role="progressbar" aria-label="Quiz progress" aria-valuemin="1"
+      [attr.aria-valuemax]="questions.length" [attr.aria-valuenow]="currentQuestionIndex + 1">
+      <span class="seg" *ngFor="let q of questions; let i = index" [class.done]="segmentDone(i)"
+        [class.current]="i === currentQuestionIndex && !isRevealed"></span>
+    </div>
+
+    <div class="question-block">
+      <span class="chip">{{ categoryLabel }}</span>
+      <h1 class="question">{{ currentQuestion.question }}</h1>
+    </div>
+
+    <div class="options" role="radiogroup" [attr.aria-label]="currentQuestion.question">
+      <button type="button" role="radio" class="option" *ngFor="let option of currentQuestion.options; let i = index"
+        [ngClass]="optionState(i)" [attr.aria-checked]="selectedIndex === i" [disabled]="isRevealed"
+        (click)="selectAnswer(i)">
+        <span class="badge">{{ getOptionLabel(i) }}</span>
+        <span class="option-text">{{ option }}</span>
+
+        <!-- selected (before checking) -->
+        <svg *ngIf="optionState(i) === 'selected'" aria-hidden="true" class="status-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+
+        <!-- after checking: icon + word, never colour alone -->
+        <span class="status" *ngIf="optionState(i) === 'correct'">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Correct
+        </span>
+        <span class="status" *ngIf="optionState(i) === 'wrong'">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          Your answer
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== RESULTS ===================== -->
+  <div class="screen" *ngIf="showResults">
+
+    <header class="topbar">
+      <button type="button" class="icon-btn" aria-label="Back to quizzes" (click)="goHome()">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="topbar-title">Quiz complete</div>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <section class="score">
+      <div class="ring">
+        <svg width="168" height="168" viewBox="0 0 168 168" role="img"
+          [attr.aria-label]="'Score: ' + score + ' out of ' + totalQuestions + ', ' + percentage.toFixed(0) + ' percent'">
+          <circle class="ring-track" cx="84" cy="84" r="74" fill="none" stroke-width="14"/>
+          <circle class="ring-value" cx="84" cy="84" r="74" fill="none" stroke-width="14" stroke-linecap="round"
+            [attr.stroke-dasharray]="ringDash" transform="rotate(-90 84 84)"/>
+        </svg>
+        <div class="ring-label">
+          <div class="ring-score">{{ score }}<span>/{{ totalQuestions }}</span></div>
+          <div class="ring-percent">{{ percentage.toFixed(0) }}% correct</div>
+        </div>
+      </div>
+      <h1 class="score-title">{{ performanceTitle }}</h1>
+      <p class="score-hint">{{ performanceHint }}</p>
+    </section>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-icon ok">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </span>
+        <div><div class="stat-num">{{ score }}</div><div class="stat-label">Correct</div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon bad">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </span>
+        <div><div class="stat-num">{{ missed }}</div><div class="stat-label">Missed</div></div>
+      </div>
+    </div>
+
+    <section class="review">
+      <div class="review-head">
+        <h2>Review your answers</h2>
+        <button type="button" class="link-btn" *ngIf="quizResults.length > reviewPreviewCount"
+          (click)="showAllReview = !showAllReview">
+          {{ showAllReview ? 'Show less' : 'Show all ' + quizResults.length }}
+        </button>
+      </div>
+
+      <ng-container *ngFor="let result of quizResults; let i = index">
+        <div class="review-item" *ngIf="showAllReview || i < reviewPreviewCount">
+          <button type="button" class="review-row" [attr.aria-expanded]="expandedReview === i" (click)="toggleReview(i)">
+            <span class="mini-badge" [class.ok]="result.isCorrect" [class.bad]="!result.isCorrect">
+              <svg *ngIf="result.isCorrect" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <svg *ngIf="!result.isCorrect" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </span>
+            <span class="review-text"><b>Q{{ i + 1 }}</b> · {{ result.question }}</span>
+            <svg aria-hidden="true" class="chevron" [class.open]="expandedReview === i" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+
+          <div class="review-detail" *ngIf="expandedReview === i">
+            <div class="detail-row">
+              <span class="detail-label">Your answer</span>
+              <span class="detail-value" [class.wrong-text]="!result.isCorrect">
+                {{ result.userAnswer !== null ? getOptionLabel(result.userAnswer) + '. ' + result.options[result.userAnswer] : 'Not answered' }}
+              </span>
+            </div>
+            <div class="detail-row" *ngIf="!result.isCorrect">
+              <span class="detail-label">Correct answer</span>
+              <span class="detail-value">{{ getOptionLabel(result.correctAnswer) + '. ' + result.options[result.correctAnswer] }}</span>
+            </div>
+            <p class="detail-explain" *ngIf="result.explanation">{{ result.explanation }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+  </div>
+</ion-content>
+
+<!-- ===================== BOTTOM AREA ===================== -->
+<ion-footer class="ion-no-border quiz-footer" *ngIf="!showResults && currentQuestion">
+
+  <!-- Before checking: back arrow + Check answer -->
+  <div class="bottom-bar" *ngIf="!isRevealed">
+    <button type="button" class="back-btn" aria-label="Previous question" [disabled]="isFirstQuestion"
+      (click)="previousQuestion()">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+    </button>
+    <button type="button" class="primary-btn" [disabled]="!canCheck" (click)="checkAnswer()">
+      Check answer
+    </button>
+  </div>
+
+  <!-- After checking: instant feedback sheet -->
+  <div class="feedback-sheet" *ngIf="isRevealed" role="status" aria-live="polite">
+    <div class="feedback-head">
+      <span class="feedback-icon" [class.ok]="isCorrectNow" [class.bad]="!isCorrectNow">
+        <svg *ngIf="isCorrectNow" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        <svg *ngIf="!isCorrectNow" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </span>
+      <div>
+        <div class="feedback-title">{{ isCorrectNow ? 'Correct!' : 'Not quite' }}</div>
+        <div class="feedback-answer" *ngIf="!isCorrectNow">The answer is {{ currentQuestion.options[currentQuestion.correctAnswer] }}</div>
+      </div>
+    </div>
+    <p class="feedback-explain" *ngIf="currentQuestion.explanation">{{ currentQuestion.explanation }}</p>
+    <div class="bottom-bar flush">
+      <button type="button" class="back-btn" aria-label="Previous question" [disabled]="isFirstQuestion"
+        (click)="previousQuestion()">
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="primary-btn" (click)="continueQuiz()">
+        {{ isLastQuestion ? 'See results' : 'Next question' }}
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</ion-footer>
+
+<ion-footer class="ion-no-border quiz-footer" *ngIf="showResults">
+  <div class="bottom-bar">
+    <button type="button" class="outline-btn" (click)="goHome()">All quizzes</button>
+    <button type="button" class="primary-btn" (click)="restartQuiz()">Try again</button>
+  </div>
+</ion-footer>

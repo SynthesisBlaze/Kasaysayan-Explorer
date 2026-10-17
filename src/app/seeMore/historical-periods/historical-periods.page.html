@@ -1,0 +1,27 @@
+<ion-content class="ion-padding page-bg">
+
+  <!-- Custom Header -->
+  <div class="custom-header">
+    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+    <h1 class="page-title">Historical Periods</h1>
+  </div>
+
+  <!-- Loading Spinner -->
+  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
+
+  <!-- Events Grid -->
+  <div class="periods-grid" *ngIf="!loading">
+    <ion-card
+      class="period-card"
+      *ngFor="let period of periods"
+      (click)="openPeriod(period.id)"
+      [style.background-image]="'url(' + period.imgPath + ')'"
+    >
+      <div class="overlay"></div>
+      <div class="period-title">{{ period.name }}</div>
+    </ion-card>
+  </div>
+
+</ion-content>

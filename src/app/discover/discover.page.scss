@@ -1,0 +1,303 @@
+ion-content {
+    --background: var(--ion-background-color);
+}
+
+// App bar title styling
+ion-title.page-title {
+    color: var(--ion-color-primary);
+    font-weight: bold;
+    font-size: 32px;
+    margin: 20px 16px 10px 0;
+}
+
+.content-wrapper {
+    background-color: var(--ion-background-color);
+    padding: 6px 0 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--app-space-6) var(--app-space-4) var(--app-space-2);
+
+    h2 {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.1px;
+        color: var(--ion-text-color);
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .pill {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --padding-top: 0;
+        --padding-bottom: 0;
+        --border-radius: var(--app-radius-pill);
+        --color: var(--ion-background-color);
+        --background: var(--ion-color-primary);
+        min-width: 96px;
+        min-height: 44px;   /* thumb-friendly: at least 44x44 */
+        height: 44px;
+        margin: 0;
+        border-radius: var(--app-radius-pill);
+        color: var(--ion-background-color);
+        background: var(--ion-color-primary);
+        font-size: var(--app-fs-body-sm);
+        font-weight: 700;
+        text-transform: none;
+    }
+}
+
+
+swiper-container {
+    padding: 8px 0 16px;
+    width: 100%;
+    height: 100%;
+}
+
+swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    touch-action: pan-y;
+}
+
+.period-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    z-index: 10;
+}
+
+.period-image {
+    width: 100%;
+    height: 230px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.period-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    pointer-events: none;
+}
+
+.period-subtitle {
+    font-size: 12px;
+    margin: 0 0 4px;
+    color: #FFFFFF;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.period-title {
+    font-size: 24px;
+    font-weight: 300;
+    margin: 0;
+    color: #FFFFFF;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+// Slide Indicators
+.slide-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 2px 0 14px;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--ion-color-step-300);
+    transition: all 0.3s ease;
+
+    &.active {
+        background-color: var(--ion-color-primary);
+        width: 24px;
+        border-radius: 4px;
+    }
+}
+
+// Events Grid
+.events-grid {
+    padding: 0 12px 0;
+    /* tighten Ionic grid gutters */
+    --ion-grid-padding: 0px;
+    --ion-grid-column-padding: 6px;
+}
+
+.event-card {
+    width: 100%;
+    height: 130px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    z-index: 10;
+}
+
+.event-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.event-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent 70%);
+    pointer-events: none;
+}
+
+.event-year {
+    color: #E0E0E0;
+    font-size: 12px;
+    margin: 0 0 2px;
+    font-weight: 600;
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.event-title {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+// Figures Grid
+.figures-grid {
+    padding: 0 8px 10px;
+}
+
+.figure-card {
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+}
+
+.figure-image-wrapper {
+    width: 100%;
+    padding-bottom: 100%;
+    position: relative;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--ion-item-background);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.figure-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.figure-name {
+    color: var(--ion-text-color);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+
+.figure-years {
+    color: var(--ion-text-color);
+    font-size: 12px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Horizontal Scroll for Places */
+.places-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  scroll-snap-type: x mandatory;
+  padding-left: 16px; /* 👈 only adds left spacing */
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.place-card {
+  flex: 0 0 70%; /* width so next card peeks */
+  height: 130px;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.place-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.55); /* transparent black bar */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.place-overlay ion-icon {
+  color: #fff;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.place-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}

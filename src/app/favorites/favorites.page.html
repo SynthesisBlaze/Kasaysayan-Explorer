@@ -1,0 +1,114 @@
+<app-app-bar title="Favorites"></app-app-bar>
+<ion-content>
+  <div class="favorites-container">
+
+
+    <!-- Search (only useful once there is something to search) -->
+    <ion-searchbar *ngIf="!loading && !loadError && favorites.length > 0" class="favorites-search"
+      placeholder="Search your favorites" color="light" [value]="searchTerm" [debounce]="150"
+      (ionInput)="onSearch($event)"></ion-searchbar>
+
+    <div class="filter-header" (click)="toggleFilter()">
+      <span>{{ selectedCategory }}</span>
+      <ion-icon name="chevron-down-outline" [class.rotate]="showFilter"></ion-icon>
+    </div>
+
+    <!-- Loading state -->
+    <div class="state-block" *ngIf="loading" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading your favorites…</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="empty-state" *ngIf="!loading && loadError">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <h3>Can't load favorites</h3>
+      <p>Check your internet connection and try again.</p>
+      <ion-button fill="outline" (click)="loadFavorites()">Try again</ion-button>
+    </div>
+
+    <!-- Empty state: nothing saved at all (or nothing in this category) -->
+    <div class="empty-state" *ngIf="!loading && !loadError && filteredFavorites.length === 0 && !searchTerm">
+      <ion-icon name="bookmarks-outline"></ion-icon>
+      <h3>{{ selectedCategory === 'All' ? 'No favorites yet' : 'No ' + selectedCategory.toLowerCase() + ' saved' }}</h3>
+      <p>Tap the heart on any place, figure, event or period to save it here.</p>
+      <ion-button fill="outline" (click)="goExplore()">Start exploring</ion-button>
+    </div>
+
+    <!-- Empty state: search found nothing -->
+    <div class="empty-state" *ngIf="!loading && !loadError && filteredFavorites.length === 0 && searchTerm">
+      <ion-icon name="search-outline"></ion-icon>
+      <h3>No matches</h3>
+      <p>Nothing in your favorites matches "{{ searchTerm }}".</p>
+      <ion-button fill="outline" (click)="clearSearch()">Clear search</ion-button>
+    </div>
+
+    <!-- Favorites -->
+    <div class="favorites-list" *ngIf="!loading && !loadError">
+      <div *ngFor="let fav of filteredFavorites" class="favorite-item" (click)="goToDetails(fav)">
+        <img [src]="fav.image" [alt]="fav.name" />
+        <div class="details">
+          <h2>{{ fav.name }}</h2>
+          <p>{{ fav.category }}</p>
+          <p class="note" *ngIf="fav.note">"{{ fav.note }}"</p>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="edit-btn" (click)="openNoteEditor(fav, $event)"
+            [attr.aria-label]="(fav.note ? 'Edit note for ' : 'Add note to ') + fav.name">
+            <ion-icon name="create-outline"></ion-icon>
+          </button>
+          <button type="button" class="remove-btn" (click)="confirmRemove(fav, $event)"
+            [attr.aria-label]="'Remove ' + fav.name + ' from favorites'">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Filter -->
+    <div class="filter-panel" *ngIf="showFilter">
+      <div *ngFor="let cat of categories" (click)="selectCategory(cat)" [class.active]="cat === selectedCategory"
+        class="filter-item">
+        <ion-icon [name]="
+            cat === 'Places'
+              ? 'location-outline'
+              : cat === 'Figures'
+              ? 'person-outline'
+              : cat === 'Events'
+              ? 'calendar-outline'
+              : cat === 'Periods'
+              ? 'business-outline'
+              : 'list-outline'
+          "></ion-icon>
+        <span>{{ cat }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit note: bottom sheet with simple validation (optional, max 140 characters) -->
+  <ion-modal class="note-modal" [isOpen]="noteModalOpen" (didDismiss)="closeNoteEditor()"
+    [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5, 0.9]" [backdropBreakpoint]="0">
+    <ng-template>
+      <ion-content>
+        <div class="note-body" *ngIf="noteTarget">
+          <h2 class="note-title">Note for {{ noteTarget.name }}</h2>
+          <p class="note-help">Optional. Add a short reminder of why you saved this.</p>
+
+          <ion-textarea label="Your note" labelPlacement="floating" fill="outline" rows="4"
+            [(ngModel)]="noteDraft" [counter]="true" [maxlength]="noteMaxLength"
+            [class.ion-invalid]="noteTooLong" [class.ion-touched]="noteTooLong"
+            [errorText]="'Please keep your note under ' + noteMaxLength + ' characters.'"
+            placeholder="e.g. Review before the exam"></ion-textarea>
+
+          <div class="note-actions">
+            <ion-button fill="outline" class="note-cancel" (click)="closeNoteEditor()">Cancel</ion-button>
+            <ion-button class="note-save" [disabled]="!canSaveNote" (click)="saveNote()">
+              {{ savingNote ? 'Saving…' : 'Save note' }}
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

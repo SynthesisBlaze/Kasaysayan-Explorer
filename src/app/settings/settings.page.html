@@ -1,0 +1,26 @@
+<app-app-bar title="Settings"></app-app-bar>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>Color Blind Mode</ion-label>
+      <ion-toggle 
+        [(ngModel)]="colorBlindMode" 
+        (ionChange)="onColorBlindModeChange($event)">
+      </ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Theme</ion-label>
+      <ion-select 
+        [(ngModel)]="selectedTheme" 
+        (ionChange)="onThemeChange($event)"
+        [disabled]="colorBlindMode"
+        interface="popover">
+        <ion-select-option value="default">Default</ion-select-option>
+        <ion-select-option value="light">Light</ion-select-option>
+        <ion-select-option value="dark">Dark</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+</ion-content>

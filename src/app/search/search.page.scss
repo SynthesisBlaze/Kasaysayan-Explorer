@@ -1,0 +1,130 @@
+ion-content {
+  --background: var(--ion-background-color);
+  --padding: 0;
+}
+
+.search-content {
+  --background: var(--ion-background-color);
+  padding: 20px 16px;
+  position: relative; /* Needed for overlay positioning */
+}
+
+/* Searchbar styling */
+ion-searchbar {
+  --background: var(--ion-color-primary);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+ion-searchbar .searchbar-input-container {
+  border-radius: 20px !important;
+}
+
+/* Categories grid */
+.categories {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 10px;
+}
+
+.category {
+  position: relative;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.category img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--app-radius-card);
+  filter: brightness(85%);
+  transition: transform 0.3s ease;
+}
+
+.category:hover img {
+  transform: scale(1.05);
+}
+
+.category span {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1.2rem;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* 🔍 Overlay Search Results */
+.search-overlay {
+  position: absolute;
+  top: 90px; /* below the search bar */
+  left: 0;
+  right: 0;
+  /* theme-aware: follows light / dark / default / color-blind palettes */
+  background: color-mix(in srgb, var(--ion-card-background, var(--ion-background-color)) 94%, transparent);
+  backdrop-filter: blur(8px); /* frosted look */
+  border: 1px solid var(--ion-color-step-150);
+  color: var(--ion-text-color);
+  z-index: 10;
+  border-radius: var(--app-radius-card);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px 0;
+  animation: fadeIn 0.2s ease-in-out;
+
+  /* Individual result item transparency */
+  ion-item {
+    --background: var(--ion-color-step-100); /* result rows */
+    --color: var(--ion-text-color);
+    --border-color: transparent;
+    border-radius: var(--app-radius-sm);
+    margin: var(--app-space-1) var(--app-space-3);
+    min-height: 44px;
+    color: var(--ion-text-color);
+    transition: background 0.2s ease;
+
+    &:hover {
+      --background: var(--ion-color-step-150);
+    }
+  }
+
+  ion-label h2 {
+    color: var(--ion-text-color);
+    font-weight: 600;
+  }
+
+  ion-label p {
+    color: var(--ion-color-step-700);
+  }
+
+  ion-thumbnail img {
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  &.no-results {
+    text-align: center;
+    padding: 20px;
+    color: var(--ion-color-step-700);
+  }
+}
+
+/* 🩶 Fade animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

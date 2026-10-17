@@ -1,0 +1,595 @@
+// ============================================================================
+// Quiz (multiple choice): question -> instant feedback -> results
+// Theme-aware: colours come from the app's --ion-* variables, so light, dark,
+// default and colour-blind themes all work. Sizes come from the style guide.
+// ============================================================================
+
+:host {
+  // Result colours. Used as borders / badges, always paired with an icon + word.
+  --q-ok: #4fbf7a;
+  --q-ok-tint: rgba(79, 191, 122, 0.16);
+  --q-ok-badge: #9ad9a8;
+  --q-ok-glyph: #12301a;
+  --q-bad: #ee7468;
+  --q-bad-tint: rgba(238, 116, 104, 0.16);
+  --q-bad-badge: #ffa79b;
+  --q-bad-glyph: #3a1511;
+}
+
+ion-content.quiz-content {
+  --background: var(--ion-background-color);
+  --padding-start: var(--app-space-4);
+  --padding-end: var(--app-space-4);
+  --padding-top: var(--app-space-4);
+  --padding-bottom: var(--app-space-4);
+  color: var(--ion-text-color);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+// ---------------------------------------------------------------------------
+// Top bar + progress
+// ---------------------------------------------------------------------------
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--app-space-2);
+}
+
+.topbar-title {
+  font-size: var(--app-fs-body);
+  font-weight: 700;
+}
+
+.topbar-spacer {
+  width: var(--app-touch-min);
+}
+
+.icon-btn {
+  width: var(--app-touch-min);
+  height: var(--app-touch-min);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ion-color-step-150);
+  color: var(--ion-text-color);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.segments {
+  display: flex;
+  gap: 4px;
+
+  .seg {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ion-color-step-200);
+    transition: background 0.25s ease;
+
+    &.current {
+      background: color-mix(in srgb, var(--ion-color-primary) 60%, transparent);
+    }
+
+    &.done {
+      background: var(--ion-color-primary);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Question
+// ---------------------------------------------------------------------------
+.question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chip {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ion-color-step-150);
+  font-size: var(--app-fs-caption);
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.question {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+// ---------------------------------------------------------------------------
+// Answer cards
+// ---------------------------------------------------------------------------
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-3);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 2px solid var(--ion-color-step-300);
+  background: var(--ion-card-background, var(--ion-item-background));
+  color: var(--ion-text-color);
+  font: inherit;
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  .badge {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--ion-color-step-300);
+    display: grid;
+    place-items: center;
+    font-size: var(--app-fs-body);
+    font-weight: 700;
+  }
+
+  .option-text {
+    flex: 1;
+  }
+
+  .status {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  // chosen, not yet checked
+  &.selected {
+    background: var(--ion-color-primary);
+    border-color: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    font-weight: 700;
+
+    .badge {
+      border: none;
+      background: var(--ion-color-primary-contrast);
+      color: var(--ion-color-primary);
+    }
+  }
+
+  // after checking
+  &.correct {
+    background: var(--q-ok-tint);
+    border-color: var(--q-ok);
+    font-weight: 700;
+
+    .badge {
+      border: none;
+      background: var(--q-ok-badge);
+      color: var(--q-ok-glyph);
+    }
+  }
+
+  &.wrong {
+    background: var(--q-bad-tint);
+    border-color: var(--q-bad);
+
+    .option-text {
+      text-decoration: line-through;
+    }
+
+    .badge {
+      border: none;
+      background: var(--q-bad-badge);
+      color: var(--q-bad-glyph);
+    }
+  }
+
+  &.dim {
+    opacity: 0.55;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bottom area (footer)
+// ---------------------------------------------------------------------------
+ion-footer.quiz-footer {
+  background: var(--ion-background-color);
+}
+
+.bottom-bar {
+  display: flex;
+  gap: var(--app-space-3);
+  align-items: center;
+  padding: var(--app-space-3) var(--app-space-4) calc(var(--app-space-4) + env(safe-area-inset-bottom, 0px));
+  max-width: 640px;
+  margin: 0 auto;
+
+  &.flush {
+    padding: var(--app-space-2) 0 0;
+  }
+}
+
+.back-btn {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: var(--app-radius-button);
+  border: 2px solid var(--ion-color-step-300);
+  background: transparent;
+  color: var(--ion-text-color);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.primary-btn,
+.outline-btn {
+  flex: 1;
+  min-height: 56px;
+  padding: 0 var(--app-space-4);
+  border-radius: var(--app-radius-button);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primary-btn {
+  border: none;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+
+  &:disabled {
+    background: var(--ion-color-step-200);
+    color: var(--ion-color-step-700);
+    cursor: default;
+  }
+}
+
+.outline-btn {
+  border: 2px solid var(--ion-color-step-300);
+  background: transparent;
+  color: var(--ion-text-color);
+}
+
+// Instant feedback sheet
+.feedback-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: var(--app-space-6) var(--app-space-4) calc(var(--app-space-4) + env(safe-area-inset-bottom, 0px));
+  background: var(--ion-card-background, var(--ion-item-background));
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.3);
+  animation: sheet-up 0.25s ease;
+
+  .bottom-bar {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.feedback-head {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+}
+
+.feedback-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+
+  &.ok {
+    background: var(--q-ok-badge);
+    color: var(--q-ok-glyph);
+  }
+
+  &.bad {
+    background: var(--q-bad-badge);
+    color: var(--q-bad-glyph);
+  }
+}
+
+.feedback-title {
+  font-size: var(--app-fs-title);
+  font-weight: 700;
+}
+
+.feedback-answer {
+  font-size: 15px;
+  color: var(--ion-color-step-700);
+}
+
+.feedback-explain {
+  margin: 0;
+  font-size: var(--app-fs-body);
+  line-height: 1.5;
+}
+
+// ---------------------------------------------------------------------------
+// Results
+// ---------------------------------------------------------------------------
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.ring {
+  position: relative;
+  width: 168px;
+  height: 168px;
+
+  .ring-track {
+    stroke: var(--ion-color-step-200);
+  }
+
+  .ring-value {
+    stroke: var(--ion-color-primary);
+    transition: stroke-dasharray 0.6s ease;
+  }
+}
+
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-score {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+
+  span {
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--ion-color-step-700);
+  }
+}
+
+.ring-percent {
+  margin-top: 4px;
+  font-size: var(--app-fs-body-sm);
+  color: var(--ion-color-step-700);
+}
+
+.score-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.score-hint {
+  margin: 6px 0 0;
+  font-size: var(--app-fs-body);
+  color: var(--ion-color-step-700);
+}
+
+.stats {
+  display: flex;
+  gap: var(--app-space-3);
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  padding: 14px var(--app-space-4);
+  border-radius: 16px;
+  border: 2px solid var(--ion-color-step-300);
+  background: var(--ion-card-background, var(--ion-item-background));
+}
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+
+  &.ok {
+    background: var(--q-ok-badge);
+    color: var(--q-ok-glyph);
+  }
+
+  &.bad {
+    background: var(--q-bad-badge);
+    color: var(--q-bad-glyph);
+  }
+}
+
+.stat-num {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--ion-color-step-700);
+}
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.link-btn {
+  min-height: var(--app-touch-min);
+  padding: 0 var(--app-space-1);
+  border: none;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  font-size: var(--app-fs-body-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.review-item {
+  border-radius: 14px;
+  border: 2px solid var(--ion-color-step-300);
+  background: var(--ion-card-background, var(--ion-item-background));
+  overflow: hidden;
+}
+
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  width: 100%;
+  min-height: 60px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mini-badge {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+
+  &.ok {
+    background: var(--q-ok-badge);
+    color: var(--q-ok-glyph);
+  }
+
+  &.bad {
+    background: var(--q-bad-badge);
+    color: var(--q-bad-glyph);
+  }
+}
+
+.review-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.chevron {
+  flex: none;
+  color: var(--ion-color-step-700);
+  transition: transform 0.2s ease;
+
+  &.open {
+    transform: rotate(90deg);
+  }
+}
+
+.review-detail {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-2);
+  font-size: var(--app-fs-body-sm);
+}
+
+.detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-1) var(--app-space-2);
+}
+
+.detail-label {
+  min-width: 120px;
+  font-weight: 700;
+}
+
+.detail-value.wrong-text {
+  text-decoration: line-through;
+}
+
+.detail-explain {
+  margin: var(--app-space-1) 0 0;
+  padding: var(--app-space-3);
+  border-radius: var(--app-radius-sm);
+  background: var(--ion-color-step-100);
+  line-height: 1.5;
+}

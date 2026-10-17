@@ -1,0 +1,27 @@
+<ion-content class="ion-padding page-bg">
+
+  <!-- Custom Header -->
+  <div class="custom-header">
+    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+    <h1 class="page-title">Historical Figures</h1>
+  </div>
+
+  <!-- Loading Spinner -->
+  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
+
+  <!-- Events Grid -->
+  <div class="figures-grid" *ngIf="!loading">
+    <ion-card
+      class="figure-card"
+      *ngFor="let figure of figures"
+      (click)="openFigure(figure.id)"
+      [style.background-image]="'url(' + figure.imgPath + ')'"
+    >
+      <div class="overlay"></div>
+      <div class="figure-title">{{ figure.name }}</div>
+    </ion-card>
+  </div>
+
+</ion-content>

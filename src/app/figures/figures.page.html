@@ -1,0 +1,64 @@
+<ion-content fullscreen [scrollY]="false">
+  <div class="loading-overlay" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <div class="loading-text">Loading content…</div>
+  </div>
+  <div class="figure" [style.background-image]="'url(' + figures?.imgPath + ')'">
+    <!-- back button placed over the image -->
+    <button class="figure-back" type="button" (click)="goBack()" aria-label="Back">
+      <ion-icon name="arrow-back"></ion-icon>
+    </button>
+
+    <div #figureCaption class="figure-caption">
+      <div class="figure-title">
+        <h1>{{ figures?.name }}</h1>
+        <p>{{ figures?.birth }} — {{ figures?.death }}</p>
+      </div>
+    </div>
+
+    <!-- actions now side-by-side in the corner -->
+    <div class="figure-actions-corner">
+      <button class="fav" (click)="toggleFavorite()" [attr.aria-pressed]="isFav"
+        [attr.aria-label]="isFav ? 'Remove from favorites' : 'Add to favorites'">
+        <ion-icon [name]="isFav ? 'heart' : 'heart-outline'"></ion-icon>
+      </button>
+
+      <button class="speak" (click)="toggleSpeak()" [attr.aria-pressed]="isSpeaking"
+        [attr.aria-label]="isSpeaking ? 'Stop reading aloud' : 'Read aloud'">
+        <ion-icon [name]="isSpeaking ? 'volume-mute' : 'volume-high'"></ion-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- sheet: added class binding for dragging and pointer handlers on the handle -->
+  <!-- sheet: added class binding for dragging and pointer handlers on the entire sheet -->
+  <div class="sheet" [class.dragging]="isDragging" [style.top.px]="sheetTop" (pointerdown)="startDrag($event)"
+    (pointermove)="onDrag($event)" (pointerup)="endDrag($event)" (pointercancel)="endDrag($event)" (pointerleave)="endDrag($event)">
+
+    <!-- Keep the handle for visual indication only, but it's not the only draggable area -->
+    <div class="handle-wrap" [class.hidden]="!showHandle">
+      <div class="handle"></div>
+      <div class="handle-label"></div>
+    </div>
+
+    <ion-segment [value]="activeTab" (ionChange)="setTab($event.detail.value)">
+      <ion-segment-button value="bio">Bio</ion-segment-button>
+      <ion-segment-button value="details">Details</ion-segment-button>
+      <ion-segment-button value="refs">References</ion-segment-button>
+    </ion-segment>
+
+    <div class="tab-content">
+      <div *ngIf="activeTab === 'bio'">
+        <p class="text">{{figures?.bio}}</p>
+      </div>
+
+      <div *ngIf="activeTab === 'details'">
+        <p class="text"><ng-container *ngFor="let f of details">• {{ f }} <br /></ng-container></p>
+      </div>
+
+      <div *ngIf="activeTab === 'refs'">
+        <p class="text"><ng-container *ngFor="let r of refs">• {{ r }} <br /></ng-container></p>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,90 @@
+<app-app-bar title="Discover"></app-app-bar>
+
+<ion-content [fullscreen]="true">
+  <div class="content-wrapper">
+
+    <!-- Periods Section -->
+    <div class="section-header">
+      <h2>PERIODS IN PHILIPPINE HISTORY</h2>
+    </div>
+
+    <swiper-container 
+      slides-per-view="1.1" 
+      space-between="10" 
+      centered-slides="true"
+      touch-start-prevent-default="false"
+      simulate-touch="true"
+      touch-ratio="1"
+      touch-angle="45"
+      threshold="5">
+      <swiper-slide *ngFor="let period of historicalPeriods">
+        <div class="period-card" (click)="navigateToPeriod(period.id, $event)">
+          <div class="period-image" [style.backgroundImage]="'url(' + period.image + ')'">
+            <div class="period-overlay">
+              <p class="period-subtitle">{{ period.subtitle }}</p>
+              <h3 class="period-title">{{ period.title }}</h3>
+            </div>
+          </div>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+
+    <!-- Historical Events Section -->
+    <div class="section-header">
+      <h2>HISTORICAL EVENTS</h2>
+      <ion-button class="pill" fill="clear" aria-label="See more historical events" [routerLink]="['/historical-events']">See More</ion-button>
+    </div>
+
+    <ion-grid class="events-grid">
+      <ion-row>
+        <ion-col size="6" *ngFor="let event of historicalEvents">
+          <div class="event-card" (click)="navigateToEvent(event.id, $event)">
+            <div class="event-image" [style.backgroundImage]="'url(' + event.image + ')'"></div>
+            <div class="event-overlay">
+              <p class="event-year">{{ event.year }}</p>
+              <p class="event-title">{{ event.title }}</p>
+            </div>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Historical Figures Section -->
+    <div class="section-header">
+      <h2>HISTORICAL FIGURES</h2>
+      <ion-button class="pill" fill="clear" aria-label="See more historical figures" [routerLink]="['/historical-figures']">See More</ion-button>
+    </div>
+
+    <ion-grid class="figures-grid">
+      <ion-row>
+        <ion-col size="6" *ngFor="let figure of historicalFigures">
+          <div class="figure-card" (click)="navigateToFigure(figure.id, $event)">
+            <div class="figure-image-wrapper">
+              <img [src]="figure.image" [alt]="figure.name" class="figure-image">
+            </div>
+            <h3 class="figure-name">{{ figure.name }}</h3>
+            <p class="figure-years">{{ figure.years }}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Historical Places Section -->
+    <div class="section-header">
+      <h2>HISTORICAL PLACES</h2>
+      <ion-button class="pill" fill="clear" aria-label="See more historical places" [routerLink]="['/historical-places']">See More</ion-button>
+    </div>
+
+    <div class="places-scroll">
+      <div *ngFor="let place of historicalPlaces" class="place-card" 
+        (click)="navigateToPlace(place.id, $event)"
+        [style.backgroundImage]="'url(' + place.image + ')'">
+        <div class="place-overlay">
+          <ion-icon name="location-outline"></ion-icon>
+          <p class="place-title">{{ place.name }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
