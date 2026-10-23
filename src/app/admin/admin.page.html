@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Kasaysayan Admin</ion-title>
+    <ion-buttons slot="end" *ngIf="isAdmin">
+      <ion-button (click)="signOut()">Sign out</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="admin-shell">
+    <section class="status-card" *ngIf="checkingAccess">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Checking administrator access…</p>
+    </section>
+
+    <section class="status-card denied-card" *ngIf="!checkingAccess && !isAdmin">
+      <div class="eyebrow">ACCESS RESTRICTED</div>
+      <h1>{{ adminCheckError ? 'Could not verify administrator access' : 'This account is not an administrator' }}</h1>
+      <p *ngIf="!isAuthenticated">Sign in with your existing account from Settings, then return here.</p>
+      <ng-container *ngIf="isAuthenticated && !adminCheckError">
+        <p>Signed in as {{ currentUserEmail || 'a guest or user account' }}. Admin access is granted by Firebase UID, not email.</p>
+        <p>In Realtime Database, set <code>admins/{{ authUid }}</code> to the boolean <code>true</code>, then make sure the deployed database rules allow the signed-in user to read their admin record.</p>
+      </ng-container>
+      <ng-container *ngIf="adminCheckError">
+        <p>The app could not read your admin status from Realtime Database. Check that the database rules are deployed and allow this signed-in user to read <code>admins/&lt;UID&gt;</code>.</p>
+        <p class="access-error">{{ adminCheckError }}</p>
+      </ng-container>
+      <ion-button fill="outline" [routerLink]="['/tabs/settings']">Go to Settings</ion-button>
+    </section>
+
+    <ng-container *ngIf="isAdmin">
+      <header class="page-heading">
+        <div>
+          <div class="eyebrow">CONTENT MANAGEMENT</div>
+          <h1>Historical content</h1>
+          <p>Manage the records displayed in Kasaysayan Explorer.</p>
+        </div>
+        <div class="admin-identity">{{ currentUserEmail }}</div>
+      </header>
+
+      <div class="error-message" role="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <nav class="collection-nav" aria-label="Content collections">
+        <button
+          *ngFor="let item of collections"
+          type="button"
+          [class.active]="collection === item.key"
+          (click)="selectCollection(item.key)">
+          {{ item.label }}
+          <span>{{ collection === item.key ? records.length : '' }}</span>
+        </button>
+      </nav>
+
+      <div class="workspace">
+        <section class="records-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>{{ collection | titlecase }}</h2>
+              <p>{{ records.length }} records</p>
+            </div>
+            <ion-button size="small" (click)="startNewRecord()">Add record</ion-button>
+          </div>
+
+          <div class="loading-row" *ngIf="loadingRecords">
+            <ion-spinner name="crescent"></ion-spinner>
+            <span>Loading records…</span>
+          </div>
+
+          <div class="empty-state" *ngIf="!loadingRecords && records.length === 0">
+            <p>No records found in this collection.</p>
+            <span>Check your database rules and connection if you expected content here.</span>
+          </div>
+
+          <article class="record-row" *ngFor="let record of records">
+            <button class="record-select" type="button" (click)="editRecord(record)">
+              <img *ngIf="record['imgPath']" [src]="record['imgPath']" alt="" loading="lazy">
+              <span class="record-copy">
+                <strong>{{ record['name'] || record.id }}</strong>
+                <small>{{ record.id }}</small>
+              </span>
+            </button>
+            <ion-button
+              fill="clear"
+              color="danger"
+              size="small"
+              [attr.aria-label]="'Delete ' + (record['name'] || record.id)"
+              (click)="confirmDelete(record)">
+              Delete
+            </ion-button>
+          </article>
+        </section>
+
+        <section class="editor-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>{{ editingRecord ? 'Edit record' : 'New record' }}</h2>
+              <p>Changes save directly to Firebase Realtime Database.</p>
+            </div>
+          </div>
+
+          <form (ngSubmit)="saveRecord()" #contentForm="ngForm">
+            <label class="field">
+              <span>Record ID</span>
+              <input
+                name="recordId"
+                [(ngModel)]="form['id']"
+                [disabled]="!!editingRecord"
+                placeholder="e.g. battle-of-mactan"
+                autocomplete="off"
+                required>
+              <small>Use only letters, numbers, hyphens, or underscores.</small>
+            </label>
+
+            <label class="field" *ngFor="let field of fields">
+              <span>{{ field.label }}</span>
+              <textarea
+                *ngIf="field.multiline; else singleLine"
+                [name]="field.key"
+                [(ngModel)]="form[field.key]"
+                [rows]="field.lineList ? 4 : 5"
+                [required]="field.key === 'name'">
+              </textarea>
+              <ng-template #singleLine>
+                <input
+                  [name]="field.key"
+                  [(ngModel)]="form[field.key]"
+                  [required]="field.key === 'name'">
+              </ng-template>
+            </label>
+
+            <div class="editor-actions">
+              <ion-button type="submit" [disabled]="contentForm.invalid || saving">
+                {{ saving ? 'Saving…' : (editingRecord ? 'Save changes' : 'Create record') }}
+              </ion-button>
+              <ion-button type="button" fill="clear" (click)="startNewRecord()">Clear</ion-button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </ng-container>
+  </main>
+</ion-content>

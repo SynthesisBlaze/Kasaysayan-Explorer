@@ -1,0 +1,59 @@
+<app-app-bar title="User Account"></app-app-bar>
+
+<ion-content>
+  <main class="account-page">
+    <section class="account-card">
+      <h1>Account</h1>
+
+      <div class="status" *ngIf="authLoading">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Checking account…</p>
+      </div>
+
+      <ng-container *ngIf="!authLoading && accountRole === 'guest'">
+        <p>Sign in to your existing user or admin account.</p>
+        <ion-item>
+          <ion-input
+            label="Email"
+            labelPlacement="stacked"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            autocomplete="username">
+          </ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Password"
+            labelPlacement="stacked"
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            autocomplete="current-password">
+          </ion-input>
+        </ion-item>
+        <ion-button
+          class="account-action"
+          expand="block"
+          (click)="signIn()"
+          [disabled]="authBusy || !email.trim() || !password">
+          {{ authBusy ? 'Signing in…' : 'Sign in' }}
+        </ion-button>
+      </ng-container>
+
+      <ng-container *ngIf="!authLoading && accountRole !== 'guest'">
+        <p>Signed in as {{ accountRole }}<span *ngIf="accountEmail"> · {{ accountEmail }}</span>.</p>
+        <ion-button
+          class="account-action"
+          expand="block"
+          fill="outline"
+          (click)="signOut()"
+          [disabled]="authBusy">
+          {{ authBusy ? 'Signing out…' : 'Sign out' }}
+        </ion-button>
+      </ng-container>
+
+      <p class="account-error" role="alert" *ngIf="authError">{{ authError }}</p>
+    </section>
+  </main>
+</ion-content>

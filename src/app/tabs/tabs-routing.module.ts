@@ -28,6 +28,10 @@ const routes: Routes = [
         loadComponent: () => import('../settings/settings.page').then(m => m.SettingsPage)
       },
       {
+        path: 'user',
+        loadComponent: () => import('../account/account.page').then(m => m.AccountPage)
+      },
+      {
         path: '',
         redirectTo: 'discover',
         pathMatch: 'full'

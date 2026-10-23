@@ -1,9 +1,10 @@
 // src/app/app.component.ts
 
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { ThemeService } from './services/theme';
+import { firstValueFrom, take } from 'rxjs';
 
 // --- Use COMPAT IMPORTS ---
 import { AngularFireAuth } from '@angular/fire/compat/auth';
@@ -15,12 +16,11 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
   standalone: false
 })
 export class AppComponent {
-  constructor(
-    private themeService: ThemeService,
-    // --- Use constructor injection ---
-    private auth: AngularFireAuth,
-    private router: Router
-  ) {
+  private themeService = inject(ThemeService);
+  private auth = inject(AngularFireAuth);
+  private router = inject(Router);
+
+  constructor() {
     this.signInAnonymously();
     App.addListener('backButton', () => {
       const url = this.router.url || '';
@@ -38,6 +38,10 @@ export class AppComponent {
 
   async signInAnonymously() {
     try {
+      const user = await firstValueFrom(this.auth.authState.pipe(take(1)));
+      if (user) {
+        return;
+      }
       // --- Use compat syntax ---
       await this.auth.signInAnonymously();
       console.log('Signed in anonymously!');
