@@ -9,6 +9,7 @@ import { addIcons } from 'ionicons';
 import { checkmarkCircleOutline, personOutline } from 'ionicons/icons';
 import { AdminContentService } from '../admin/admin-content.service';
 import { AccountService } from '../services/account.service';
+import { QUIZ_CATALOG, QuizBest, QuizScoresService } from '../services/quiz-scores.service';
 import { ThemeMode, ThemeService } from '../services/theme';
 import { UiFeedbackService } from '../services/ui-feedback.service';
 import { AppBarComponent } from '../shared/app-bar/app-bar.component';
@@ -46,6 +47,7 @@ export class AccountPage implements OnInit {
   private adminContent = inject(AdminContentService);
   private themeService = inject(ThemeService);
   private feedback = inject(UiFeedbackService);
+  private quizScores = inject(QuizScoresService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
 
@@ -75,6 +77,10 @@ export class AccountPage implements OnInit {
   /** Good news shown on the sign-in form, e.g. right after registering. */
   authNotice = '';
 
+  /** Highest score for each quiz, shown once signed in. */
+  quizRows: { key: string; title: string; type: string; best: QuizBest | null }[] =
+    QUIZ_CATALOG.map(quiz => ({ ...quiz, best: null }));
+
   selectedTheme: ThemeMode = 'default';
   colorBlindMode = false;
 
@@ -85,6 +91,13 @@ export class AccountPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.selectedTheme = this.themeService.getTheme();
     this.colorBlindMode = await this.themeService.getColorBlindMode();
+
+    this.quizScores.getBestScores().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: scores => {
+        this.quizRows = QUIZ_CATALOG.map(quiz => ({ ...quiz, best: scores[quiz.key] ?? null }));
+      },
+      error: error => console.warn('Could not load quiz scores:', error)
+    });
 
     this.auth.authState.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: user => {
@@ -210,7 +223,7 @@ export class AccountPage implements OnInit {
       created = true;
       // Creating an account signs it in. Registering should only create it, so
       // go straight back to guest and let the person sign in themselves.
-      await this.accounts.signOut();
+      await this.accounts.finishRegistration();
       signedOut = true;
     } catch (error) {
       if (!created) {

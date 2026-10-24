@@ -472,3 +472,21 @@ ion-content {
         min-width: 70px;
     }
 }
+// What happened to the score (saved, or sign in to save it)
+.save-note {
+  margin: 8px 0 0;
+  font-size: var(--app-fs-body-sm);
+  color: var(--ion-text-color);
+}
+
+.link-btn {
+  min-height: var(--app-touch-min);
+  padding: 0 var(--app-space-1);
+  border: none;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

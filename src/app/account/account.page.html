@@ -145,6 +145,26 @@
       </ion-list>
     </section>
 
+    <!-- Signed in: best score for each quiz -->
+    <section class="account-section" *ngIf="!authLoading && accountRole !== 'guest'" aria-labelledby="scores-heading">
+      <h2 id="scores-heading">Quiz scores</h2>
+
+      <ion-list class="detail-list">
+        <ion-item lines="none" *ngFor="let quiz of quizRows">
+          <ion-label>
+            <p>{{ quiz.type }}</p>
+            <h3>{{ quiz.title }}</h3>
+          </ion-label>
+          <span class="score-value" slot="end" *ngIf="quiz.best as best">
+            {{ best.best }}<span class="score-total">/{{ best.total }}</span>
+            <span class="visually-hidden"> best score</span>
+          </span>
+          <span class="score-empty" slot="end" *ngIf="!quiz.best">Not taken yet</span>
+        </ion-item>
+      </ion-list>
+      <p class="card-hint">Only your highest score for each quiz is kept.</p>
+    </section>
+
     <!-- Settings (for everyone) -->
     <section class="account-section" aria-labelledby="settings-heading">
       <h2 id="settings-heading">Settings</h2>

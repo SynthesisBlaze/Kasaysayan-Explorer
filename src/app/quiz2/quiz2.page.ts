@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, Platform } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { addIcons } from 'ionicons';
+import { QuizScoresService } from '../services/quiz-scores.service';
 import {
   arrowBackOutline,
   checkmarkCircle,
@@ -53,6 +54,13 @@ export class Quiz2Page implements OnInit {
   isCorrect: boolean = false;
   quizCompleted: boolean = false;
   quizResults: QuizResult[] = [];
+
+  /** Which quiz this is, as saved with the account's best score. */
+  private quizKey = '';
+
+  /** What happened to the score after the quiz ended (shown on the results screen). */
+  saveNote = '';
+  saveStatus: 'none' | 'guest' | 'saved' | 'error' = 'none';
 
   figuresQuestions: QuizQuestion[] = [
     {
@@ -136,7 +144,8 @@ export class Quiz2Page implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private alertController: AlertController,
-    private platform: Platform
+    private platform: Platform,
+    private quizScores: QuizScoresService
   ) {
     addIcons({
       arrowBackOutline,
@@ -165,10 +174,14 @@ export class Quiz2Page implements OnInit {
       this.isCorrect = false;
       this.quizCompleted = false;
       this.quizResults = [];
+      this.saveNote = '';
+      this.saveStatus = 'none';
 
       if (category === 'picture-figures') {
+        this.quizKey = 'picture-figures';
         this.currentCategory = 'Historical Figures';
       } else if (category === 'picture-places') {
+        this.quizKey = 'picture-places';
         this.currentCategory = 'Historical Places';
       } else {
         this.router.navigate(['/']);
@@ -321,7 +334,31 @@ export class Quiz2Page implements OnInit {
       this.initializeAnswerParts();
     } else {
       this.quizCompleted = true;
+      void this.saveScore();
     }
+  }
+
+  /** Signed-in accounts keep their highest score; guests can play but nothing is saved. */
+  private async saveScore() {
+    const result = await this.quizScores.saveScore(this.quizKey, this.score, this.totalQuestions);
+    if (result.status === 'guest') {
+      this.saveStatus = 'guest';
+      this.saveNote = 'Sign in to save your best score.';
+    } else if (result.status === 'error') {
+      this.saveStatus = 'error';
+      this.saveNote = "Couldn't save your score right now.";
+    } else {
+      this.saveStatus = 'saved';
+      this.saveNote = !result.isNewBest
+        ? `Your best score is ${result.best}/${result.total}.`
+        : result.firstScore
+          ? 'Score saved to your account.'
+          : 'New best! Saved to your account.';
+    }
+  }
+
+  goToAccount() {
+    this.router.navigate(['/tabs/account']);
   }
 
   previousQuestion() {
@@ -391,6 +428,8 @@ export class Quiz2Page implements OnInit {
     this.showFeedback = false;
     this.quizCompleted = false;
     this.quizResults = [];
+    this.saveNote = '';
+    this.saveStatus = 'none';
     this.initializeAnswerParts();
   }
 

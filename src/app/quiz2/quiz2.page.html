@@ -77,6 +77,10 @@
               {{ calculatePercentage() >= 90 ? 'Excellent!' : calculatePercentage() >= 70 ? 'Good Job!' :
               calculatePercentage() >= 50 ? 'Not Bad!' : 'Keep Practicing!' }}
             </div>
+            <p class="save-note" *ngIf="saveNote" role="status">
+              {{ saveNote }}
+              <button type="button" class="link-btn" *ngIf="saveStatus === 'guest'" (click)="goToAccount()">Sign in</button>
+            </p>
           </div>
         </ion-card-content>
       </ion-card>

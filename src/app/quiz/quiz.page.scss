@@ -429,6 +429,12 @@ ion-footer.quiz-footer {
   color: var(--ion-color-step-700);
 }
 
+.save-note {
+  margin: var(--app-space-2) 0 0;
+  font-size: var(--app-fs-body-sm);
+  color: var(--ion-text-color);
+}
+
 .stats {
   display: flex;
   gap: var(--app-space-3);

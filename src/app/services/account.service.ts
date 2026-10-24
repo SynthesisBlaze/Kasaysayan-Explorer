@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Database, get, ref, serverTimestamp, set } from '@angular/fire/database';
+import { FavoriteData, FavoritesService } from './favorites.service';
 
 export type AccountRole = 'user' | 'admin';
 
@@ -19,9 +20,23 @@ export interface AccountProfile {
 export class AccountService {
   private auth = inject(AngularFireAuth);
   private database = inject(Database);
+  private favorites = inject(FavoritesService);
 
-  signIn(email: string, password: string): Promise<unknown> {
-    return this.auth.signInWithEmailAndPassword(email, password);
+  /** Favorites a guest saved before registering; they go back to the new guest session after sign-out. */
+  private guestFavoritesDuringRegistration: Record<string, FavoriteData> = {};
+
+  /**
+   * Signs in. Favorites the person saved as a guest are added to the account,
+   * so they are saved to it from now on.
+   */
+  async signIn(email: string, password: string): Promise<void> {
+    const guestFavorites = await this.readGuestFavorites();
+    await this.auth.signInWithEmailAndPassword(email, password);
+    try {
+      await this.favorites.addMissing(guestFavorites);
+    } catch (error) {
+      console.error('Could not move guest favorites into the account:', error);
+    }
   }
 
   /**
@@ -32,6 +47,7 @@ export class AccountService {
    * Resolves to false when the account exists but its profile could not be saved.
    */
   async register(name: string, email: string, password: string): Promise<boolean> {
+    this.guestFavoritesDuringRegistration = await this.readGuestFavorites();
     const credential = await this.auth.createUserWithEmailAndPassword(email, password);
     const user = credential.user;
     if (!user) {
@@ -54,10 +70,38 @@ export class AccountService {
     }
   }
 
-  /** Signs out, then goes back to the anonymous guest session the rest of the app relies on. */
+  /**
+   * Ends the session that registering started, so the person is not signed in
+   * automatically. Favorites saved as a guest stay with the new guest session.
+   */
+  async finishRegistration(): Promise<void> {
+    const guestFavorites = this.guestFavoritesDuringRegistration;
+    this.guestFavoritesDuringRegistration = {};
+    await this.signOut();
+    try {
+      await this.favorites.addMissing(guestFavorites);
+    } catch (error) {
+      console.error('Could not keep guest favorites after registering:', error);
+    }
+  }
+
+  /**
+   * Signs out, then goes back to the anonymous guest session the rest of the app relies on.
+   * That is a new, empty guest session, so favorites are cleared along with the account.
+   */
   async signOut(): Promise<void> {
     await this.auth.signOut();
     await this.auth.signInAnonymously();
+  }
+
+  private async readGuestFavorites(): Promise<Record<string, FavoriteData>> {
+    try {
+      const current = await this.auth.currentUser;
+      return current?.isAnonymous ? await this.favorites.readAll(current.uid) : {};
+    } catch (error) {
+      console.warn('Could not read guest favorites:', error);
+      return {};
+    }
   }
 
   async getProfile(uid: string): Promise<AccountProfile | null> {

@@ -5,6 +5,9 @@ import { IonContent, IonFooter, Platform } from '@ionic/angular/standalone';
 import { QuizService, Question, QuizResult } from './quiz.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UiFeedbackService } from '../services/ui-feedback.service';
+import { QuizScoresService } from '../services/quiz-scores.service';
+
+const MULTIPLE_CHOICE_QUIZZES = ['places', 'figures', 'events', 'periods'];
 
 @Component({
   selector: 'app-quiz',
@@ -25,6 +28,12 @@ export class QuizPage implements OnInit {
   totalQuestions = 0;
   percentage = 0;
   categoryLabel = '';
+  /** Which quiz this is, as saved with the account's best score. */
+  private quizKey = 'places';
+
+  /** What happened to the score after the quiz ended (shown on the results screen). */
+  saveNote = '';
+  saveStatus: 'none' | 'guest' | 'saved' | 'error' = 'none';
 
   /** Results screen: which review row is open, and whether the whole list is shown */
   expandedReview: number | null = null;
@@ -36,6 +45,7 @@ export class QuizPage implements OnInit {
   constructor(
     private quizService: QuizService,
     private ui: UiFeedbackService,
+    private quizScores: QuizScoresService,
     private router: Router,
     private route: ActivatedRoute,
     private platform: Platform
@@ -44,6 +54,8 @@ export class QuizPage implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       const category = params['category'] || 'Places';
+      const requested = String(category).toLowerCase();
+      this.quizKey = MULTIPLE_CHOICE_QUIZZES.includes(requested) ? requested : 'places';
       this.categoryLabel = String(category).toUpperCase();
       this.questions = this.quizService.getQuestionsByCategory(category);
       this.resetState();
@@ -61,6 +73,8 @@ export class QuizPage implements OnInit {
     this.percentage = 0;
     this.expandedReview = null;
     this.showAllReview = false;
+    this.saveNote = '';
+    this.saveStatus = 'none';
   }
 
   ionViewDidEnter() {
@@ -202,6 +216,30 @@ export class QuizPage implements OnInit {
     this.expandedReview = null;
     this.showAllReview = false;
     this.showResults = true;
+    void this.saveScore();
+  }
+
+  /** Signed-in accounts keep their highest score; guests can play but nothing is saved. */
+  private async saveScore() {
+    const result = await this.quizScores.saveScore(this.quizKey, this.score, this.totalQuestions);
+    if (result.status === 'guest') {
+      this.saveStatus = 'guest';
+      this.saveNote = 'Sign in to save your best score.';
+    } else if (result.status === 'error') {
+      this.saveStatus = 'error';
+      this.saveNote = "Couldn't save your score right now.";
+    } else {
+      this.saveStatus = 'saved';
+      this.saveNote = !result.isNewBest
+        ? `Your best score is ${result.best}/${result.total}.`
+        : result.firstScore
+          ? 'Score saved to your account.'
+          : 'New best! Saved to your account.';
+    }
+  }
+
+  goToAccount() {
+    this.router.navigate(['/tabs/account']);
   }
 
   // ---------------------------------------------------------------------------
