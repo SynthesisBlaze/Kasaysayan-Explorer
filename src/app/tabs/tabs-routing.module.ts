@@ -24,13 +24,12 @@ const routes: Routes = [
         loadComponent: () => import('../favorites/favorites.page').then(m => m.FavoritesPage)
       },
       {
-        path: 'settings',
-        loadComponent: () => import('../settings/settings.page').then(m => m.SettingsPage)
-      },
-      {
-        path: 'user',
+        path: 'account',
         loadComponent: () => import('../account/account.page').then(m => m.AccountPage)
       },
+      // Settings now live on the Account page; keep old links working
+      { path: 'settings', redirectTo: 'account', pathMatch: 'full' },
+      { path: 'user', redirectTo: 'account', pathMatch: 'full' },
       {
         path: '',
         redirectTo: 'discover',

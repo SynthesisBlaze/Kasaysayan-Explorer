@@ -2,19 +2,19 @@
   "rules": {
     "periods": {
       ".read": true,
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "events": {
       ".read": true,
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "figures": {
       ".read": true,
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "places": {
       ".read": true,
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "favorites": {
       ".read": "auth != null",
@@ -24,6 +24,28 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": false
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider !== 'anonymous' && (data.exists() ? newData.child('role').val() === data.child('role').val() : newData.child('role').val() === 'user')",
+        ".validate": "newData.hasChildren(['email', 'role'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length <= 254"
+        },
+        "role": {
+          ".validate": "newData.val() === 'user' || newData.val() === 'admin'"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     }
   }

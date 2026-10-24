@@ -1,48 +1,280 @@
 ion-content {
   --background: var(--ion-background-color);
+  color: var(--ion-text-color);
 }
 
-.account-page {
-  padding: 24px 16px;
-}
-
-.account-card {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px 20px;
-  border-radius: var(--app-radius-card);
-  background: var(--ion-item-background);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+// Header band: a soft wash of the current theme's accent color
+.hero {
+  padding: var(--app-space-6) var(--app-space-6) calc(var(--app-space-8) + var(--app-space-6));
+  text-align: center;
+  color: var(--ion-text-color);
+  background: var(--ion-color-step-100);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ion-color-primary) 30%, var(--ion-background-color)) 0%,
+    color-mix(in srgb, var(--ion-color-primary) 10%, var(--ion-background-color)) 100%
+  );
+  border-radius: 0 0 28px 28px;
 
   h1 {
-    margin: 0 0 8px;
-    color: var(--ion-text-color);
-    font-size: 24px;
+    margin: var(--app-space-3) 0 var(--app-space-1);
+    font-size: var(--app-fs-heading);
+    font-weight: bold;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   p {
-    color: var(--ion-text-color);
-    line-height: 1.5;
-  }
-
-  ion-item {
-    --background: transparent;
-    --padding-start: 0;
-    --inner-padding-end: 0;
+    margin: 0 auto;
+    max-width: 320px;
+    font-size: var(--app-fs-body-sm);
+    line-height: 1.4;
+    opacity: 0.85;
   }
 }
 
-.status {
+.emblem {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+
+  ion-icon {
+    font-size: 30px;
+  }
+
+  &.emblem-initial {
+    font-size: 28px;
+    font-weight: bold;
+  }
+}
+
+.role-pill {
+  display: inline-block;
+  margin-top: var(--app-space-2);
+  padding: var(--app-space-1) var(--app-space-3);
+  border-radius: var(--app-radius-pill);
+  background: var(--ion-background-color);
+  font-size: var(--app-fs-caption);
+  font-weight: 700;
+}
+
+// The first card overlaps the header band
+.account-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-6);
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--app-space-6) var(--app-space-4);
+}
+
+.hero + .account-page {
+  margin-top: calc(-1 * var(--app-space-8));
+  padding-top: 0;
+}
+
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-3);
+
+  h2 {
+    margin: 0;
+    font-size: var(--app-fs-title);
+    font-weight: bold;
+    color: var(--ion-text-color);
+  }
+}
+
+.hero + .account-page > .account-section:first-child {
+  margin-top: calc(var(--app-space-8) + var(--app-space-2));
+}
+
+.state-block {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--app-space-3);
+  color: var(--ion-text-color);
+
+  p {
+    margin: 0;
+  }
+}
+
+// Sign in / register card
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-4);
+  padding: var(--app-space-6) var(--app-space-4) var(--app-space-4);
+  border-radius: 24px;
+  background: var(--ion-item-background);
+  box-shadow: var(--app-shadow-card);
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-space-4);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-2);
+}
+
+.field-label {
+  font-size: var(--app-fs-body-sm);
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.auth-input {
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-step-700);
+  --placeholder-opacity: 0.8;
+  --padding-start: 14px;
+  --padding-end: 8px;
+  min-height: 52px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: var(--app-radius-button);
+  background: var(--ion-background-color);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  &.has-focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ion-color-primary) 30%, transparent);
+  }
+
+  &.has-error {
+    border-color: var(--ion-color-danger);
+  }
+}
+
+.card-hint {
+  margin: 0;
+  text-align: center;
+  font-size: var(--app-fs-caption);
+  line-height: 1.4;
+  color: var(--ion-color-step-700);
 }
 
 .account-action {
-  margin: 20px 0 0;
+  margin: 0;
+  min-height: 52px;
+  font-size: var(--app-fs-body);
+  font-weight: 700;
   text-transform: none;
+  --border-radius: var(--app-radius-button);
 }
 
-.account-error {
+.switch-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--app-space-2);
+  padding-top: var(--app-space-3);
+  border-top: 1px solid var(--ion-color-step-200);
+  font-size: var(--app-fs-body-sm);
+  color: var(--ion-text-color);
+}
+
+.link-btn {
+  min-height: var(--app-touch-min);
+  padding: 0 var(--app-space-1);
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.account-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  margin: 0;
+  padding: var(--app-space-3);
+  border-radius: var(--app-radius-button);
+  background: var(--ion-background-color);
+  border: 1px solid var(--ion-color-success);
+  font-size: var(--app-fs-body-sm);
+  line-height: 1.4;
+  color: var(--ion-text-color);
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 22px;
+    color: var(--ion-color-success);
+  }
+}
+
+.account-error,
+.field-error {
+  margin: 0;
+  font-size: var(--app-fs-body-sm);
+  line-height: 1.4;
   color: var(--ion-color-danger);
+}
+
+// Rows for the user's details and the settings (same look as the other list pages)
+ion-list {
+  background: transparent;
+  padding: 0;
+
+  ion-item {
+    --background: var(--ion-item-background);
+    --padding-start: var(--app-space-3);
+    --inner-padding-end: var(--app-space-3);
+    --min-height: 56px;
+    --border-radius: var(--app-radius-card);
+    border-radius: var(--app-radius-card);
+    margin-bottom: var(--app-space-3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+    ion-label {
+      font-size: var(--app-fs-body);
+      color: var(--ion-text-color);
+    }
+
+    ion-toggle {
+      margin-left: auto;
+    }
+
+    ion-select {
+      width: 100%;
+    }
+
+    ion-toggle,
+    ion-select {
+      min-height: var(--app-touch-min);
+    }
+  }
+}
+
+.detail-list ion-item ion-label {
+  p {
+    margin: 0 0 2px;
+    font-size: var(--app-fs-caption);
+    color: var(--ion-color-step-700);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--app-fs-body);
+    font-weight: 600;
+    color: var(--ion-text-color);
+    overflow-wrap: anywhere;
+  }
 }

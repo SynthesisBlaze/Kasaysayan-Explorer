@@ -9,6 +9,13 @@ describe('toFriendlyMessage', () => {
     expect(message).not.toContain('auth/');
   });
 
+  it('maps registration errors to plain messages', () => {
+    expect(toFriendlyMessage({ code: 'auth/email-already-in-use' }))
+      .toBe('An account with this email already exists. Try signing in instead.');
+    expect(toFriendlyMessage({ code: 'auth/weak-password' }))
+      .toContain('at least 6 characters');
+  });
+
   it('maps database permission errors', () => {
     expect(toFriendlyMessage(new Error('PERMISSION_DENIED: Permission denied')))
       .toBe('You do not have permission to do that.');

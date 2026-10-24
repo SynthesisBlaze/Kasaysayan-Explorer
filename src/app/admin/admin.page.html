@@ -17,12 +17,12 @@
     <section class="status-card denied-card" *ngIf="!checkingAccess && !isAdmin">
       <div class="eyebrow">ACCESS RESTRICTED</div>
       <h1>{{ adminCheckError ? 'Could not verify administrator access' : 'This account is not an administrator' }}</h1>
-      <p *ngIf="!isAuthenticated">Sign in with your admin account from Settings, then return here.</p>
+      <p *ngIf="!isAuthenticated">Sign in with your admin account from the Account tab, then return here.</p>
       <p *ngIf="isAuthenticated && !adminCheckError">
         Signed in as {{ currentUserEmail || 'a user account' }}. This account does not have administrator access. Contact the project owner if you think this is a mistake.
       </p>
       <p *ngIf="adminCheckError" class="access-error">{{ adminCheckError }} Please check your connection and try again.</p>
-      <ion-button fill="outline" [routerLink]="['/tabs/settings']">Go to Settings</ion-button>
+      <ion-button fill="outline" [routerLink]="['/tabs/account']">Go to Account</ion-button>
     </section>
 
     <ng-container *ngIf="isAdmin">

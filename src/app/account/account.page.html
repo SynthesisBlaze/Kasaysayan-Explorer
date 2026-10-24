@@ -1,61 +1,187 @@
-<app-app-bar title="User Account"></app-app-bar>
+<app-app-bar title="Account"></app-app-bar>
 
 <ion-content>
-  <main class="account-page">
-    <section class="account-card">
-      <h1>Account</h1>
-
-      <div class="status" *ngIf="authLoading">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Checking account…</p>
+  <!-- Header: welcomes a guest, or introduces the signed-in person -->
+  <header class="hero" *ngIf="!authLoading">
+    <ng-container *ngIf="accountRole === 'guest'">
+      <div class="emblem" aria-hidden="true">
+        <ion-icon name="person-outline"></ion-icon>
       </div>
+      <h1>{{ mode === 'signin' ? 'Welcome back' : 'Create your account' }}</h1>
+      <p>{{ mode === 'signin' ? 'Sign in to see your details and settings.' : 'Fill in your details to register.' }}</p>
+    </ng-container>
 
-      <ng-container *ngIf="!authLoading && accountRole === 'guest'">
-        <p>Sign in to your existing user or admin account.</p>
-        <ion-item>
+    <ng-container *ngIf="accountRole !== 'guest'">
+      <div class="emblem emblem-initial" aria-hidden="true">{{ initial }}</div>
+      <h1>{{ displayName }}</h1>
+      <span class="role-pill">{{ roleLabel }}</span>
+    </ng-container>
+  </header>
+
+  <main class="account-page">
+
+    <div class="state-block" *ngIf="authLoading" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Checking account…</p>
+    </div>
+
+    <!-- Signed out: one card for sign in and register -->
+    <section class="account-card auth-card" *ngIf="!authLoading && accountRole === 'guest'" aria-label="Sign in or register">
+      <p class="account-notice" role="status" *ngIf="authNotice">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ authNotice }}</span>
+      </p>
+
+      <form (ngSubmit)="submit()" novalidate>
+        <div class="field" *ngIf="mode === 'register'">
+          <span class="field-label" aria-hidden="true">Name</span>
           <ion-input
-            label="Email"
-            labelPlacement="stacked"
+            class="auth-input"
+            aria-label="Name"
+            placeholder="Your full name"
+            type="text"
+            name="name"
+            [maxlength]="nameMax"
+            [(ngModel)]="name"
+            autocomplete="name">
+          </ion-input>
+        </div>
+
+        <div class="field">
+          <span class="field-label" aria-hidden="true">Email</span>
+          <ion-input
+            class="auth-input"
+            aria-label="Email"
+            placeholder="name@example.com"
             type="email"
             name="email"
-            maxlength="254"
+            [maxlength]="emailMax"
             [(ngModel)]="email"
             autocomplete="username">
           </ion-input>
-        </ion-item>
-        <ion-item>
+        </div>
+
+        <div class="field">
+          <span class="field-label" aria-hidden="true">Password</span>
           <ion-input
-            label="Password"
-            labelPlacement="stacked"
+            class="auth-input"
+            aria-label="Password"
+            [placeholder]="mode === 'register' ? 'At least 6 characters' : 'Enter your password'"
             type="password"
             name="password"
-            maxlength="128"
+            [maxlength]="passwordMax"
             [(ngModel)]="password"
-            autocomplete="current-password">
+            [attr.autocomplete]="mode === 'register' ? 'new-password' : 'current-password'">
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
           </ion-input>
-        </ion-item>
-        <ion-button
-          class="account-action"
-          expand="block"
-          (click)="signIn()"
-          [disabled]="authBusy || !email.trim() || !password">
-          {{ authBusy ? 'Signing in…' : 'Sign in' }}
-        </ion-button>
-      </ng-container>
+        </div>
 
-      <ng-container *ngIf="!authLoading && accountRole !== 'guest'">
-        <p>Signed in as {{ accountRole }}<span *ngIf="accountEmail"> · {{ accountEmail }}</span>.</p>
+        <div class="field" *ngIf="mode === 'register'">
+          <span class="field-label" aria-hidden="true">Confirm password</span>
+          <ion-input
+            class="auth-input"
+            [class.has-error]="passwordsMismatch"
+            aria-label="Confirm password"
+            placeholder="Type your password again"
+            type="password"
+            name="confirmPassword"
+            [maxlength]="passwordMax"
+            [(ngModel)]="confirmPassword"
+            autocomplete="new-password">
+            <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+          </ion-input>
+          <p class="field-error" *ngIf="passwordsMismatch">The passwords do not match.</p>
+        </div>
+
+        <p class="account-error" role="alert" *ngIf="authError">{{ authError }}</p>
+
         <ion-button
           class="account-action"
+          type="submit"
           expand="block"
-          fill="outline"
-          (click)="signOut()"
-          [disabled]="authBusy">
-          {{ authBusy ? 'Signing out…' : 'Sign out' }}
+          [disabled]="!canSubmit">
+          <ng-container *ngIf="mode === 'signin'">{{ authBusy ? 'Signing in…' : 'Sign in' }}</ng-container>
+          <ng-container *ngIf="mode === 'register'">{{ authBusy ? 'Creating account…' : 'Create account' }}</ng-container>
         </ion-button>
-      </ng-container>
+
+        <p class="card-hint" *ngIf="mode === 'signin'">
+          Administrators go to the content manager after signing in.
+        </p>
+      </form>
+
+      <div class="switch-row">
+        <span>{{ mode === 'signin' ? "Don't have an account?" : 'Already have an account?' }}</span>
+        <button type="button" class="link-btn" (click)="setMode(mode === 'signin' ? 'register' : 'signin')">
+          {{ mode === 'signin' ? 'Register' : 'Sign in' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Signed in: the user's details -->
+    <section class="account-section" *ngIf="!authLoading && accountRole !== 'guest'" aria-labelledby="details-heading">
+      <h2 id="details-heading">Your details</h2>
 
       <p class="account-error" role="alert" *ngIf="authError">{{ authError }}</p>
+
+      <ion-list class="detail-list">
+        <ion-item lines="none" *ngIf="accountName">
+          <ion-label>
+            <p>Name</p>
+            <h3>{{ accountName }}</h3>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <p>Email</p>
+            <h3>{{ accountEmail || 'Not available' }}</h3>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none" *ngIf="memberSince">
+          <ion-label>
+            <p>Member since</p>
+            <h3>{{ memberSince | date: 'mediumDate' }}</h3>
+          </ion-label>
+        </ion-item>
+      </ion-list>
     </section>
+
+    <!-- Settings (for everyone) -->
+    <section class="account-section" aria-labelledby="settings-heading">
+      <h2 id="settings-heading">Settings</h2>
+
+      <ion-list class="settings-list">
+        <ion-item>
+          <ion-label>Color Blind Mode</ion-label>
+          <ion-toggle
+            [(ngModel)]="colorBlindMode"
+            (ionChange)="onColorBlindModeChange($event)">
+          </ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Theme</ion-label>
+          <ion-select
+            [(ngModel)]="selectedTheme"
+            (ionChange)="onThemeChange($event)"
+            [disabled]="colorBlindMode"
+            interface="popover">
+            <ion-select-option value="default">Default</ion-select-option>
+            <ion-select-option value="light">Light</ion-select-option>
+            <ion-select-option value="dark">Dark</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    </section>
+
+    <ion-button
+      *ngIf="!authLoading && accountRole !== 'guest'"
+      class="account-action sign-out"
+      expand="block"
+      fill="outline"
+      (click)="signOut()"
+      [disabled]="authBusy">
+      {{ authBusy ? 'Signing out…' : 'Sign out' }}
+    </ion-button>
+
   </main>
 </ion-content>

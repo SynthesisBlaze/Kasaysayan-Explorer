@@ -38,11 +38,8 @@ const routes: Routes = [
     canMatch: [nonAdminOnlyGuard],
     loadChildren: () => import('./periods/periods.module').then(m => m.PeriodsPageModule)
   },
-  {
-    path: 'settings',
-    canMatch: [nonAdminOnlyGuard],
-    loadChildren: () => import('./settings/settings.page').then( m => m.SettingsPage)
-  },
+  { path: 'settings', redirectTo: '/tabs/account', pathMatch: 'full' },
+  { path: 'account', redirectTo: '/tabs/account', pathMatch: 'full' },
   {
     path: 'admin',
     loadComponent: () => import('./admin/admin.page').then(m => m.AdminPage)

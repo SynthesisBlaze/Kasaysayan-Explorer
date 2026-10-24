@@ -14,9 +14,21 @@ export interface AdminRecord {
 export class AdminContentService {
   private database = inject(Database);
 
+  /**
+   * An account is an administrator when its profile role is `admin`
+   * (`users/<uid>/role`) or it is listed under the older `admins/<uid>` marker.
+   */
   async isAdmin(uid: string): Promise<boolean> {
-    const snapshot = await get(ref(this.database, `admins/${uid}`));
-    return snapshot.val() === true;
+    const [legacyMarker, profileRole] = await Promise.all([
+      get(ref(this.database, `admins/${uid}`)),
+      // Accounts created before roles existed have no profile; a failed read
+      // here must not lock out accounts that are still admins through `admins`.
+      get(ref(this.database, `users/${uid}/role`)).catch(error => {
+        console.warn('Could not read the account role:', error);
+        return null;
+      })
+    ]);
+    return legacyMarker.val() === true || profileRole?.val() === 'admin';
   }
 
   async getRecords(collection: AdminCollection): Promise<AdminRecord[]> {

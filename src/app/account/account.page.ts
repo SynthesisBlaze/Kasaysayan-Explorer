@@ -5,14 +5,33 @@ import { IonicModule } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { checkmarkCircleOutline, personOutline } from 'ionicons/icons';
 import { AdminContentService } from '../admin/admin-content.service';
+import { AccountService } from '../services/account.service';
+import { ThemeMode, ThemeService } from '../services/theme';
+import { UiFeedbackService } from '../services/ui-feedback.service';
 import { AppBarComponent } from '../shared/app-bar/app-bar.component';
+import {
+  EMAIL_MAX,
+  NAME_MAX,
+  PASSWORD_MAX,
+  validateRegistration,
+  validateSignIn
+} from '../shared/account-validation';
 import { toFriendlyMessage } from '../shared/friendly-error';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const EMAIL_MAX = 254;
-const PASSWORD_MIN = 6;
-const PASSWORD_MAX = 128;
+type AuthMode = 'signin' | 'register';
+type AccountRoleView = 'guest' | 'user' | 'admin';
+
+/** The parts of the Firebase user this page reads. */
+interface SignedInUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  isAnonymous: boolean;
+  metadata?: { creationTime?: string };
+}
 
 @Component({
   selector: 'app-account',
@@ -23,41 +42,55 @@ const PASSWORD_MAX = 128;
 })
 export class AccountPage implements OnInit {
   private auth = inject(AngularFireAuth);
+  private accounts = inject(AccountService);
   private adminContent = inject(AdminContentService);
+  private themeService = inject(ThemeService);
+  private feedback = inject(UiFeedbackService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
 
+  /** Each account load gets a number so a slow, older load can never overwrite a newer one. */
+  private loadCount = 0;
+  /** True while registering: the new account is briefly signed in, and the page must not show it. */
+  private ignoreAuthEvents = false;
+
+  readonly nameMax = NAME_MAX;
+  readonly emailMax = EMAIL_MAX;
+  readonly passwordMax = PASSWORD_MAX;
+
+  mode: AuthMode = 'signin';
+  name = '';
   email = '';
   password = '';
-  accountRole: 'guest' | 'user' | 'admin' = 'guest';
+  confirmPassword = '';
+
+  accountRole: AccountRoleView = 'guest';
+  accountName = '';
   accountEmail = '';
+  memberSince: Date | null = null;
+
   authLoading = true;
   authBusy = false;
   authError = '';
+  /** Good news shown on the sign-in form, e.g. right after registering. */
+  authNotice = '';
 
-  ngOnInit(): void {
+  selectedTheme: ThemeMode = 'default';
+  colorBlindMode = false;
+
+  constructor() {
+    addIcons({ checkmarkCircleOutline, personOutline });
+  }
+
+  async ngOnInit(): Promise<void> {
+    this.selectedTheme = this.themeService.getTheme();
+    this.colorBlindMode = await this.themeService.getColorBlindMode();
+
     this.auth.authState.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: user => {
-        this.authLoading = true;
-        this.accountEmail = user?.email ?? '';
-        if (!user || user.isAnonymous) {
-          this.accountRole = 'guest';
-          this.authLoading = false;
-          return;
+        if (!this.ignoreAuthEvents) {
+          void this.loadAccount(user);
         }
-
-        void this.adminContent.isAdmin(user.uid).then(isAdmin => {
-          this.accountRole = isAdmin ? 'admin' : 'user';
-          if (isAdmin) {
-            void this.router.navigateByUrl('/admin');
-          }
-        }).catch(error => {
-          this.authError = 'Could not verify account access. Please try again.';
-          console.error('Could not verify admin access:', error);
-          this.accountRole = 'user';
-        }).finally(() => {
-          this.authLoading = false;
-        });
       },
       error: error => {
         this.authLoading = false;
@@ -67,26 +100,87 @@ export class AccountPage implements OnInit {
     });
   }
 
-  async signIn(): Promise<void> {
-    const email = this.email.trim();
-    if (!email || !this.password) {
-      this.authError = 'Enter your email and password.';
+  get canSubmit(): boolean {
+    if (this.authBusy || !this.email.trim() || !this.password) {
+      return false;
+    }
+    return this.mode === 'signin' || (!!this.name.trim() && !!this.confirmPassword);
+  }
+
+  get passwordsMismatch(): boolean {
+    return this.mode === 'register' && !!this.confirmPassword && this.password !== this.confirmPassword;
+  }
+
+  get displayName(): string {
+    return this.accountName || this.accountEmail || 'Your account';
+  }
+
+  get initial(): string {
+    return this.displayName.trim().charAt(0).toUpperCase() || '?';
+  }
+
+  get roleLabel(): string {
+    return this.accountRole === 'admin' ? 'Administrator' : 'User';
+  }
+
+  setMode(mode: AuthMode): void {
+    this.mode = mode;
+    this.authError = '';
+    this.authNotice = '';
+    this.password = '';
+    this.confirmPassword = '';
+  }
+
+  async submit(): Promise<void> {
+    if (this.authBusy) {
       return;
     }
-    if (email.length > EMAIL_MAX || !EMAIL_PATTERN.test(email)) {
-      this.authError = 'Enter a valid email address, for example name@example.com.';
-      return;
+    if (this.mode === 'register') {
+      await this.register();
+    } else {
+      await this.signIn();
     }
-    if (this.password.length < PASSWORD_MIN || this.password.length > PASSWORD_MAX) {
-      this.authError = `Password must be ${PASSWORD_MIN}-${PASSWORD_MAX} characters.`;
+  }
+
+  async signOut(): Promise<void> {
+    this.authBusy = true;
+    this.authError = '';
+    try {
+      await this.accounts.signOut();
+      this.resetForm();
+    } catch (error) {
+      this.authError = toFriendlyMessage(error, 'Could not sign out. Please try again.');
+      console.error('Account sign-out failed:', error);
+    } finally {
+      this.authBusy = false;
+    }
+  }
+
+  onThemeChange(event: any): void {
+    this.themeService.setTheme(event.detail.value as ThemeMode);
+  }
+
+  async onColorBlindModeChange(event: any): Promise<void> {
+    const enabled = event.detail.checked;
+    this.colorBlindMode = enabled;
+    await this.themeService.setColorBlindMode(enabled);
+  }
+
+  private async signIn(): Promise<void> {
+    const problem = validateSignIn(this.email, this.password);
+    if (problem) {
+      this.authError = problem;
       return;
     }
 
     this.authBusy = true;
     this.authError = '';
+    this.authNotice = '';
     try {
-      await this.auth.signInWithEmailAndPassword(email, this.password);
-      this.password = '';
+      // The role is read from the account afterwards (see loadAccount): admins go
+      // to the content manager, everyone else stays here.
+      await this.accounts.signIn(this.email.trim(), this.password);
+      this.resetForm();
     } catch (error) {
       this.authError = toFriendlyMessage(error, 'Sign-in failed. Check your email and password and try again.');
       console.error('Account sign-in failed:', error);
@@ -95,18 +189,109 @@ export class AccountPage implements OnInit {
     }
   }
 
-  async signOut(): Promise<void> {
+  private async register(): Promise<void> {
+    const problem = validateRegistration(this.name, this.email, this.password, this.confirmPassword);
+    if (problem) {
+      this.authError = problem;
+      return;
+    }
+
+    const name = this.name.trim();
+    const email = this.email.trim();
     this.authBusy = true;
     this.authError = '';
+    this.authNotice = '';
+    this.ignoreAuthEvents = true;
+
+    let created = false;
+    let signedOut = false;
     try {
-      await this.auth.signOut();
-      await this.auth.signInAnonymously();
-      this.password = '';
+      await this.accounts.register(name, email, this.password);
+      created = true;
+      // Creating an account signs it in. Registering should only create it, so
+      // go straight back to guest and let the person sign in themselves.
+      await this.accounts.signOut();
+      signedOut = true;
     } catch (error) {
-      this.authError = toFriendlyMessage(error, 'Could not sign out. Please try again.');
-      console.error('Account sign-out failed:', error);
+      if (!created) {
+        this.authError = toFriendlyMessage(error, 'Could not create your account. Please try again.');
+      }
+      console.error('Account registration failed:', error);
     } finally {
+      this.ignoreAuthEvents = false;
       this.authBusy = false;
     }
+
+    if (created && signedOut) {
+      const message = 'Account created. You can now sign in.';
+      this.resetForm();
+      this.email = email;
+      this.authNotice = message;
+      void this.feedback.success(message);
+    } else if (created) {
+      void this.feedback.success('Account created. You are signed in.');
+    }
+    await this.loadAccount(await this.auth.currentUser);
+  }
+
+  private resetForm(): void {
+    this.name = '';
+    this.email = '';
+    this.password = '';
+    this.confirmPassword = '';
+    this.mode = 'signin';
+  }
+
+  private async loadAccount(user: SignedInUser | null): Promise<void> {
+    const load = ++this.loadCount;
+    this.authLoading = true;
+
+    if (!user || user.isAnonymous) {
+      this.showGuest();
+      this.authLoading = false;
+      return;
+    }
+
+    try {
+      const [isAdmin, profile] = await Promise.all([
+        this.adminContent.isAdmin(user.uid),
+        this.accounts.getProfile(user.uid)
+      ]);
+      if (load !== this.loadCount) {
+        return;
+      }
+
+      this.accountRole = isAdmin ? 'admin' : 'user';
+      this.accountName = profile?.name || user.displayName || '';
+      this.accountEmail = user.email ?? profile?.email ?? '';
+      const created = profile?.createdAt ?? Date.parse(user.metadata?.creationTime ?? '');
+      this.memberSince = Number.isFinite(created) ? new Date(created) : null;
+      this.authError = '';
+
+      if (isAdmin) {
+        void this.router.navigateByUrl('/admin');
+      }
+    } catch (error) {
+      if (load !== this.loadCount) {
+        return;
+      }
+      this.accountRole = 'user';
+      this.accountName = user.displayName ?? '';
+      this.accountEmail = user.email ?? '';
+      this.memberSince = null;
+      this.authError = 'Could not verify account access. Please try again.';
+      console.error('Could not verify admin access:', error);
+    } finally {
+      if (load === this.loadCount) {
+        this.authLoading = false;
+      }
+    }
+  }
+
+  private showGuest(): void {
+    this.accountRole = 'guest';
+    this.accountName = '';
+    this.accountEmail = '';
+    this.memberSince = null;
   }
 }
