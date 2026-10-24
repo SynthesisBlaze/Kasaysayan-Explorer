@@ -1,9 +1,37 @@
 :host {
-  --admin-ink: #202a35;
-  --admin-muted: #6c7782;
-  --admin-border: #e5e9ed;
+  --admin-ink: #1b2430;
+  --admin-muted: #4a5561;
+  --admin-border: #d3d9df;
   --admin-paper: #ffffff;
+  --admin-accent: #3a4a3f;
+  --admin-accent-ink: #ffffff;
+  --admin-eyebrow: #6b5a2e;
+  --admin-danger: #b3261e;
   display: block;
+}
+
+/* Buttons: don't inherit the light tan primary colour, which is unreadable on white */
+ion-button:not([color]) {
+  --background: var(--admin-accent);
+  --background-hover: #2c3a31;
+  --background-activated: #2c3a31;
+  --color: var(--admin-accent-ink);
+}
+
+ion-button:not([color])[fill='clear'],
+ion-button:not([color])[fill='outline'] {
+  --background: transparent;
+  --background-hover: rgb(58 74 63 / 10%);
+  --color: var(--admin-accent);
+  --border-color: var(--admin-accent);
+}
+
+ion-button[color='danger'] {
+  --color: var(--admin-danger);
+}
+
+ion-spinner {
+  color: var(--admin-accent);
 }
 
 ion-content {
@@ -54,7 +82,7 @@ h2 {
 
 .eyebrow {
   margin-bottom: 8px;
-  color: var(--ion-color-primary);
+  color: var(--admin-eyebrow);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -92,7 +120,7 @@ h2 {
   padding: 10px;
   border-radius: 8px;
   background: #fff3f3;
-  color: #9b2525 !important;
+  color: #8a1c1c !important;
   overflow-wrap: anywhere;
 }
 
@@ -116,7 +144,7 @@ h2 {
   border: 1px solid var(--admin-border);
   border-radius: 10px;
   background: var(--admin-paper);
-  color: var(--admin-muted);
+  color: var(--admin-ink);
   font: inherit;
   font-weight: 600;
   white-space: nowrap;
@@ -124,9 +152,9 @@ h2 {
 }
 
 .collection-nav button.active {
-  border-color: var(--ion-color-primary);
-  background: var(--ion-color-primary);
-  color: white;
+  border-color: var(--admin-accent);
+  background: var(--admin-accent);
+  color: var(--admin-accent-ink);
 }
 
 .collection-nav button span {
@@ -253,10 +281,44 @@ h2 {
   resize: vertical;
 }
 
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #6b7580;
+  opacity: 1;
+}
+
+.field input:disabled {
+  background: #eef0f2;
+  color: var(--admin-muted);
+}
+
+/* Field with a validation problem: red outline, message shown right below */
+.field.has-error > span {
+  color: var(--admin-danger);
+}
+
+.field.has-error input,
+.field.has-error textarea {
+  border-color: var(--admin-danger);
+  background: #fff6f6;
+}
+
+.field small.field-error {
+  color: var(--admin-danger);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .field input:focus,
 .field textarea:focus {
-  outline: 2px solid color-mix(in srgb, var(--ion-color-primary) 35%, transparent);
-  border-color: var(--ion-color-primary);
+  outline: 2px solid color-mix(in srgb, var(--admin-accent) 35%, transparent);
+  border-color: var(--admin-accent);
+}
+
+.field.has-error input:focus,
+.field.has-error textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--admin-danger) 35%, transparent);
+  border-color: var(--admin-danger);
 }
 
 .editor-actions {
@@ -273,6 +335,7 @@ h2 {
   background: #fff3f3;
   color: #9b2525;
   overflow-wrap: anywhere;
+  white-space: pre-line; /* one validation message per line */
 }
 
 .inline-error {

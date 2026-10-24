@@ -6,6 +6,8 @@ import { AlertController, IonicModule } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
 import { take } from 'rxjs';
 import { AdminCollection, AdminContentService, AdminRecord } from './admin-content.service';
+import { validateAdminRecord } from './admin-record.model';
+import { toFriendlyMessage } from '../shared/friendly-error';
 
 interface AdminField {
   key: string;
@@ -77,6 +79,8 @@ export class AdminPage implements OnInit {
   currentUserEmail = '';
   authUid = '';
   errorMessage = '';
+  /** Validation messages grouped by form field, shown under the field they belong to. */
+  fieldErrors: Record<string, string[]> = {};
   adminCheckError = '';
   isAuthenticated = false;
   isAdmin = false;
@@ -107,7 +111,15 @@ export class AdminPage implements OnInit {
     this.fields = COLLECTION_FIELDS[collection];
     this.editingRecord = null;
     this.form = {};
+    this.fieldErrors = {};
     await this.loadRecords();
+  }
+
+  clearFieldError(key: string): void {
+    if (this.fieldErrors[key]) {
+      const { [key]: _removed, ...rest } = this.fieldErrors;
+      this.fieldErrors = rest;
+    }
   }
 
   async signOut(): Promise<void> {
@@ -121,6 +133,8 @@ export class AdminPage implements OnInit {
   }
 
   startNewRecord(): void {
+    this.fieldErrors = {};
+    this.errorMessage = '';
     this.editingRecord = null;
     this.form = { id: '' };
     for (const field of this.fields) {
@@ -129,6 +143,8 @@ export class AdminPage implements OnInit {
   }
 
   editRecord(record: AdminRecord): void {
+    this.fieldErrors = {};
+    this.errorMessage = '';
     this.editingRecord = record;
     this.form = { id: record.id };
     for (const field of this.fields) {
@@ -143,18 +159,6 @@ export class AdminPage implements OnInit {
 
   async saveRecord(): Promise<void> {
     const id = (this.form['id'] ?? '').trim();
-    if (!this.form['name']?.trim()) {
-      this.errorMessage = 'A name is required.';
-      return;
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
-      this.errorMessage = 'Use a record ID containing only letters, numbers, hyphens, or underscores.';
-      return;
-    }
-    if (this.records.some(record => record.id === id && record.id !== this.editingRecord?.id)) {
-      this.errorMessage = `A record with ID "${id}" already exists in ${this.collection}.`;
-      return;
-    }
 
     const value: Record<string, unknown> = { ...(this.editingRecord ?? {}) };
     delete value['id'];
@@ -165,8 +169,20 @@ export class AdminPage implements OnInit {
         : rawValue;
     }
 
-    this.saving = true;
+    // Check the whole record (limits, formats, field combinations) before saving.
+    const result = validateAdminRecord(this.collection, id, value);
+    const fieldErrors = { ...result.fieldErrors };
+    if (!fieldErrors['id'] && this.records.some(record => record.id === id && record.id !== this.editingRecord?.id)) {
+      fieldErrors['id'] = [`A record with ID "${id}" already exists in ${this.collection}.`];
+    }
+    this.fieldErrors = fieldErrors;
     this.errorMessage = '';
+    if (Object.keys(fieldErrors).length > 0) {
+      this.focusFirstInvalidField();
+      return;
+    }
+
+    this.saving = true;
     try {
       await this.content.saveRecord(this.collection, id, value);
       this.editingRecord = null;
@@ -197,6 +213,13 @@ export class AdminPage implements OnInit {
     await alert.present();
   }
 
+  private focusFirstInvalidField(): void {
+    setTimeout(() => {
+      const target = document.querySelector('.editor-panel .field.has-error input, .editor-panel .field.has-error textarea');
+      (target as HTMLElement | null)?.focus();
+    });
+  }
+
   private async deleteRecord(record: AdminRecord): Promise<void> {
     this.errorMessage = '';
     try {
@@ -223,7 +246,7 @@ export class AdminPage implements OnInit {
     } catch (error) {
       this.isAdmin = false;
       this.isAuthenticated = true;
-      this.adminCheckError = error instanceof Error ? error.message : String(error);
+      this.adminCheckError = toFriendlyMessage(error, 'We could not verify your administrator access right now.');
       this.showError('Could not verify administrator access', error);
     } finally {
       this.checkingAccess = false;
@@ -253,8 +276,8 @@ export class AdminPage implements OnInit {
   }
 
   private showError(action: string, error: unknown): void {
-    const detail = error instanceof Error ? error.message : String(error);
-    this.errorMessage = `${action}: ${detail}`;
-    console.error(this.errorMessage, error);
+    // Users get a plain message; the technical detail goes to the console only.
+    this.errorMessage = `${action}. ${toFriendlyMessage(error)}`;
+    console.error(action, error);
   }
 }

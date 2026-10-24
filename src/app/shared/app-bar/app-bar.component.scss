@@ -4,6 +4,8 @@ ion-toolbar {
   --border-color: transparent;
   --padding-start: 8px;
   --padding-end: 8px;
+  // Tall enough for the 32px title (the default 44px bar clips it)
+  --min-height: 68px;
 }
 
 // App bar title styling
@@ -11,8 +13,18 @@ ion-title.page-title {
   color: var(--ion-text-color);
   font-weight: bold;
   font-size: 32px;
-  margin: 20px 16px 10px 0;
-  padding: 0;
+  // Centre the text with line-height instead of a top margin: the title is
+  // absolutely positioned inside the toolbar, so a margin pushed it down and the
+  // toolbar clipped the bottom half of the letters.
+  line-height: 68px;
+  margin: 0;
+  padding: 0 16px;
+  text-align: left;
+
+  // Leave room for the back button so the title never sits under it
+  &.has-back {
+    padding-left: 88px;
+  }
 }
 
 // Back button styling

@@ -17,15 +17,11 @@
     <section class="status-card denied-card" *ngIf="!checkingAccess && !isAdmin">
       <div class="eyebrow">ACCESS RESTRICTED</div>
       <h1>{{ adminCheckError ? 'Could not verify administrator access' : 'This account is not an administrator' }}</h1>
-      <p *ngIf="!isAuthenticated">Sign in with your existing account from Settings, then return here.</p>
-      <ng-container *ngIf="isAuthenticated && !adminCheckError">
-        <p>Signed in as {{ currentUserEmail || 'a guest or user account' }}. Admin access is granted by Firebase UID, not email.</p>
-        <p>In Realtime Database, set <code>admins/{{ authUid }}</code> to the boolean <code>true</code>, then make sure the deployed database rules allow the signed-in user to read their admin record.</p>
-      </ng-container>
-      <ng-container *ngIf="adminCheckError">
-        <p>The app could not read your admin status from Realtime Database. Check that the database rules are deployed and allow this signed-in user to read <code>admins/&lt;UID&gt;</code>.</p>
-        <p class="access-error">{{ adminCheckError }}</p>
-      </ng-container>
+      <p *ngIf="!isAuthenticated">Sign in with your admin account from Settings, then return here.</p>
+      <p *ngIf="isAuthenticated && !adminCheckError">
+        Signed in as {{ currentUserEmail || 'a user account' }}. This account does not have administrator access. Contact the project owner if you think this is a mistake.
+      </p>
+      <p *ngIf="adminCheckError" class="access-error">{{ adminCheckError }} Please check your connection and try again.</p>
       <ion-button fill="outline" [routerLink]="['/tabs/settings']">Go to Settings</ion-button>
     </section>
 
@@ -69,7 +65,7 @@
 
           <div class="empty-state" *ngIf="!loadingRecords && records.length === 0">
             <p>No records found in this collection.</p>
-            <span>Check your database rules and connection if you expected content here.</span>
+            <span>Check your connection and try again if you expected content here.</span>
           </div>
 
           <article class="record-row" *ngFor="let record of records">
@@ -95,42 +91,54 @@
           <div class="panel-heading">
             <div>
               <h2>{{ editingRecord ? 'Edit record' : 'New record' }}</h2>
-              <p>Changes save directly to Firebase Realtime Database.</p>
+              <p>Changes are saved as soon as you press the button.</p>
             </div>
           </div>
 
           <form (ngSubmit)="saveRecord()" #contentForm="ngForm">
-            <label class="field">
+            <label class="field" [class.has-error]="fieldErrors['id']?.length">
               <span>Record ID</span>
               <input
                 name="recordId"
                 [(ngModel)]="form['id']"
+                (input)="clearFieldError('id')"
+                [attr.aria-invalid]="fieldErrors['id']?.length ? 'true' : null"
                 [disabled]="!!editingRecord"
+                maxlength="60"
                 placeholder="e.g. battle-of-mactan"
                 autocomplete="off"
                 required>
-              <small>Use only letters, numbers, hyphens, or underscores.</small>
+              <small class="field-error" role="alert" *ngFor="let message of fieldErrors['id']">{{ message }}</small>
+              <small *ngIf="!fieldErrors['id']?.length">1-60 characters: letters, numbers, hyphens, or underscores.</small>
             </label>
 
-            <label class="field" *ngFor="let field of fields">
+            <label class="field" *ngFor="let field of fields" [class.has-error]="fieldErrors[field.key]?.length">
               <span>{{ field.label }}</span>
               <textarea
                 *ngIf="field.multiline; else singleLine"
                 [name]="field.key"
                 [(ngModel)]="form[field.key]"
+                (input)="clearFieldError(field.key)"
+                [attr.aria-invalid]="fieldErrors[field.key]?.length ? 'true' : null"
                 [rows]="field.lineList ? 4 : 5"
+                [attr.maxlength]="field.lineList ? null : 3000"
                 [required]="field.key === 'name'">
               </textarea>
               <ng-template #singleLine>
                 <input
                   [name]="field.key"
                   [(ngModel)]="form[field.key]"
+                  (input)="clearFieldError(field.key)"
+                  [attr.aria-invalid]="fieldErrors[field.key]?.length ? 'true' : null"
+                  [attr.maxlength]="field.key === 'name' ? 100 : field.key === 'imgPath' ? 500 : field.key === 'date' ? 60 : (field.key === 'birth' || field.key === 'death') ? 4 : null"
+                  [attr.inputmode]="(field.key === 'birth' || field.key === 'death') ? 'numeric' : null"
                   [required]="field.key === 'name'">
               </ng-template>
+              <small class="field-error" role="alert" *ngFor="let message of fieldErrors[field.key]">{{ message }}</small>
             </label>
 
             <div class="editor-actions">
-              <ion-button type="submit" [disabled]="contentForm.invalid || saving">
+              <ion-button type="submit" [disabled]="saving">
                 {{ saving ? 'Saving…' : (editingRecord ? 'Save changes' : 'Create record') }}
               </ion-button>
               <ion-button type="button" fill="clear" (click)="startNewRecord()">Clear</ion-button>
