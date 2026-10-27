@@ -1,11 +1,4 @@
-// ============================================================================
-// Quiz (multiple choice): question -> instant feedback -> results
-// Theme-aware: colours come from the app's --ion-* variables, so light, dark,
-// default and colour-blind themes all work. Sizes come from the style guide.
-// ============================================================================
-
 :host {
-  // Result colours. Used as borders / badges, always paired with an icon + word.
   --q-ok: #4fbf7a;
   --q-ok-tint: rgba(79, 191, 122, 0.16);
   --q-ok-badge: #9ad9a8;
@@ -33,9 +26,6 @@ ion-content.quiz-content {
   margin: 0 auto;
 }
 
-// ---------------------------------------------------------------------------
-// Top bar + progress
-// ---------------------------------------------------------------------------
 .topbar {
   display: flex;
   align-items: center;
@@ -87,9 +77,6 @@ ion-content.quiz-content {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Question
-// ---------------------------------------------------------------------------
 .question-block {
   display: flex;
   flex-direction: column;
@@ -113,9 +100,6 @@ ion-content.quiz-content {
   font-weight: 700;
 }
 
-// ---------------------------------------------------------------------------
-// Answer cards
-// ---------------------------------------------------------------------------
 .options {
   display: flex;
   flex-direction: column;
@@ -174,7 +158,6 @@ ion-content.quiz-content {
     font-weight: 700;
   }
 
-  // chosen, not yet checked
   &.selected {
     background: var(--ion-color-primary);
     border-color: var(--ion-color-primary);
@@ -188,7 +171,6 @@ ion-content.quiz-content {
     }
   }
 
-  // after checking
   &.correct {
     background: var(--q-ok-tint);
     border-color: var(--q-ok);
@@ -221,9 +203,6 @@ ion-content.quiz-content {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Bottom area (footer)
-// ---------------------------------------------------------------------------
 ion-footer.quiz-footer {
   background: var(--ion-background-color);
 }
@@ -295,7 +274,6 @@ ion-footer.quiz-footer {
   color: var(--ion-text-color);
 }
 
-// Instant feedback sheet
 .feedback-sheet {
   display: flex;
   flex-direction: column;
@@ -364,9 +342,6 @@ ion-footer.quiz-footer {
   line-height: 1.5;
 }
 
-// ---------------------------------------------------------------------------
-// Results
-// ---------------------------------------------------------------------------
 .score {
   display: flex;
   flex-direction: column;

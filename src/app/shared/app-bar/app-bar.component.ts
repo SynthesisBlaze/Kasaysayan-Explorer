@@ -13,4 +13,5 @@ export class AppBarComponent {
   @Input() title: string = 'Default Title';
   @Input() subtitle: string = '';
   @Input() showBackButton: boolean = false;
+  @Input() backHref: string = '/tabs/discover';
 }

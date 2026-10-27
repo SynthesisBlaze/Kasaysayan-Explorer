@@ -1,4 +1,3 @@
-// quiz2.page.ts - Complete with back navigation handling
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -55,10 +54,8 @@ export class Quiz2Page implements OnInit {
   quizCompleted: boolean = false;
   quizResults: QuizResult[] = [];
 
-  /** Which quiz this is, as saved with the account's best score. */
   private quizKey = '';
 
-  /** What happened to the score after the quiz ended (shown on the results screen). */
   saveNote = '';
   saveStatus: 'none' | 'guest' | 'saved' | 'error' = 'none';
 
@@ -164,7 +161,6 @@ export class Quiz2Page implements OnInit {
     this.route.queryParams.subscribe(params => {
       const category = params['category'];
 
-      // Reset quiz state when category changes
       this.currentQuestion = 0;
       this.userAnswer = '';
       this.userAnswerParts = [];
@@ -192,20 +188,17 @@ export class Quiz2Page implements OnInit {
   }
 
   ionViewDidEnter() {
-    // Handle hardware back button
     this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(10, () => {
       this.handleBackNavigation();
     });
   }
 
   ionViewWillLeave() {
-    // Remove back button handler
     if (this.backButtonSubscription) {
       this.backButtonSubscription.unsubscribe();
     }
   }
 
-  // Handle browser back button/gesture
   @HostListener('window:popstate', ['$event'])
   onPopState(event: any) {
     if (!this.quizCompleted) {
@@ -216,19 +209,15 @@ export class Quiz2Page implements OnInit {
 
   handleBackNavigation() {
     if (this.quizCompleted) {
-      // If quiz is completed, go back to categories
       this.goHome();
       return;
     }
 
     if (this.currentQuestion > 0 && !this.answered) {
-      // Go to previous question
       this.previousQuestion();
     } else if (this.answered) {
-      // If answered, show alert
       this.showBackAlert();
     } else {
-      // If on first question, confirm exit
       this.confirmExitQuiz();
     }
   }
@@ -242,7 +231,7 @@ export class Quiz2Page implements OnInit {
     await alert.present();
   }
 
-  private async confirmExitQuiz() {
+  async confirmExitQuiz() {
     const alert = await this.alertController.create({
       header: 'Exit Quiz?',
       message: 'Are you sure you want to exit? Your progress will be lost.',
@@ -283,7 +272,7 @@ export class Quiz2Page implements OnInit {
     if (wordLength <= 4) return 80;
     if (wordLength <= 6) return 100;
     if (wordLength <= 8) return 120;
-    return 140; // For words longer than 8 characters
+    return 140;
   }
 
   updateUserAnswer() {
@@ -305,10 +294,7 @@ export class Quiz2Page implements OnInit {
     this.answered = true;
     const currentQ = this.getCurrentQuestion();
 
-    const correctAnswer = currentQ.answer.toLowerCase();
-    const userAnswer = this.userAnswer.toLowerCase().trim();
-
-    this.isCorrect = userAnswer === correctAnswer;
+    this.isCorrect = this.normalize(this.userAnswer) === this.normalize(currentQ.answer);
 
     if (this.isCorrect) {
       this.score++;
@@ -338,7 +324,6 @@ export class Quiz2Page implements OnInit {
     }
   }
 
-  /** Signed-in accounts keep their highest score; guests can play but nothing is saved. */
   private async saveScore() {
     const result = await this.quizScores.saveScore(this.quizKey, this.score, this.totalQuestions);
     if (result.status === 'guest') {
@@ -368,6 +353,54 @@ export class Quiz2Page implements OnInit {
       this.answered = false;
       this.initializeAnswerParts();
     }
+  }
+
+  private normalize(text: string): string {
+    return text
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  expandedReview: number | null = null;
+  showAllReview = false;
+  readonly reviewPreviewCount = 3;
+
+  get segments(): number[] {
+    return Array.from({ length: this.totalQuestions }, (_, i) => i);
+  }
+
+  get percentage(): number {
+    return this.calculatePercentage();
+  }
+
+  get missed(): number {
+    return this.totalQuestions - this.score;
+  }
+
+  get ringDash(): string {
+    const circumference = 2 * Math.PI * 74;
+    return `${(this.percentage / 100) * circumference} ${circumference}`;
+  }
+
+  get performanceTitle(): string {
+    const p = this.percentage;
+    return p >= 90 ? 'Excellent!' : p >= 70 ? 'Good job!' : p >= 50 ? 'Not bad!' : 'Keep practicing!';
+  }
+
+  get performanceHint(): string {
+    return this.missed > 0 ? 'Review what you missed, then try again.' : 'You got every question right.';
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  toggleReview(i: number) {
+    this.expandedReview = this.expandedReview === i ? null : i;
   }
 
   calculatePercentage(): number {
@@ -430,6 +463,8 @@ export class Quiz2Page implements OnInit {
     this.quizResults = [];
     this.saveNote = '';
     this.saveStatus = 'none';
+    this.expandedReview = null;
+    this.showAllReview = false;
     this.initializeAnswerParts();
   }
 

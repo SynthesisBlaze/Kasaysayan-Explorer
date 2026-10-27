@@ -1,144 +1,154 @@
-<!-- quiz2.page.html - Updated with submit button validation -->
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="container" *ngIf="!quizCompleted">
-    <!-- Quiz Header -->
-    <div class="quiz-header">
-      <div class="header-top">
-        <div class="quiz-progress">
-          <span class="progress-text">Question {{ currentQuestion + 1 }} of {{ totalQuestions }}</span>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="((currentQuestion + 1) / totalQuestions) * 100"></div>
-          </div>
-        </div>
-      </div>
+<ion-content [fullscreen]="true" class="quiz-content">
+
+  <div class="screen" *ngIf="!quizCompleted">
+
+    <header class="topbar">
+      <button type="button" class="icon-btn" aria-label="Exit quiz" (click)="confirmExitQuiz()">
+        <ion-icon name="close" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="topbar-title" aria-live="polite">Question {{ currentQuestion + 1 }} of {{ totalQuestions }}</div>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="segments" role="progressbar" aria-label="Quiz progress" aria-valuemin="1"
+      [attr.aria-valuemax]="totalQuestions" [attr.aria-valuenow]="currentQuestion + 1">
+      <span class="seg" *ngFor="let i of segments" [class.done]="i < currentQuestion || (i === currentQuestion && answered)"
+        [class.current]="i === currentQuestion && !answered"></span>
     </div>
 
-    <!-- Question Content -->
-    <div class="question-container">
-      <!-- Image Display -->
-      <div class="image-container">
-        <img [src]="getCurrentQuestion().image" [alt]="getCurrentQuestion().figureName" class="question-image">
-        <div class="image-overlay"></div>
-      </div>
+    <div class="picture">
+      <img [src]="getCurrentQuestion().image" alt="Who or what is in this picture?">
+    </div>
 
-      <!-- Question Text -->
-      <div class="question-text">
-        <p>{{ getCurrentQuestion().question }}</p>
-      </div>
+    <div class="question-block">
+      <span class="chip">{{ currentCategory | uppercase }}</span>
+      <h1 class="question picture-question">{{ getCurrentQuestion().question }}</h1>
+    </div>
 
-      <!-- Answer Input - Dynamic Boxes -->
-      <div class="answer-section">
-        <!-- Instruction Text -->
-        <div class="input-instruction">
-          <p><em>Input the full name at the text box below. Each box represents one word of the answer.</em></p>
-        </div>
-
-        <div class="multi-input-container">
-          <div *ngFor="let part of getAnswerParts(); let i = index" class="input-wrapper">
-            <ion-input class="answer-input-part" placeholder="" [(ngModel)]="userAnswerParts[i]"
-              (ngModelChange)="updateUserAnswer()" (keyup.enter)="checkAnswer()" [disabled]="answered" type="text"
-              [style.width.px]="calculateInputWidth(part)">
-            </ion-input>
-          </div>
-        </div>
-
-        <ion-button class="submit-btn" expand="block" (click)="checkAnswer()"
-          [disabled]="!isAllInputsFilled() || answered">
-          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          Submit Answer
-        </ion-button>
-      </div>
-
-      <!-- Simple Feedback (Only show if answered) -->
-      <div class="simple-feedback" *ngIf="answered">
-        <ion-button class="next-btn" expand="block" (click)="nextQuestion()">
-          {{ currentQuestion < totalQuestions - 1 ? 'Next Question' : 'See Results' }} </ion-button>
+    <div class="answer-area">
+      <p class="answer-help">
+        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+        Type one word in each box ({{ getAnswerParts().length }} {{ getAnswerParts().length === 1 ? 'word' : 'words' }})
+      </p>
+      <div class="word-inputs" [class.is-correct]="answered && isCorrect" [class.is-wrong]="answered && !isCorrect">
+        <input *ngFor="let part of getAnswerParts(); let i = index; trackBy: trackByIndex"
+          class="word-input" type="text" autocomplete="off" autocapitalize="words" spellcheck="false"
+          [attr.aria-label]="'Word ' + (i + 1) + ' of ' + getAnswerParts().length"
+          [style.width.px]="calculateInputWidth(part)"
+          [(ngModel)]="userAnswerParts[i]" (ngModelChange)="updateUserAnswer()"
+          (keyup.enter)="checkAnswer()" [disabled]="answered">
       </div>
     </div>
   </div>
 
-  <!-- Results Section -->
-  <div class="container" *ngIf="quizCompleted">
-    <div class="results-section">
-      <!-- Score Card -->
-      <ion-card class="score-card">
-        <ion-card-content class="score-content">
-          <div class="score-circle">
-            <span class="score-percentage">{{ calculatePercentage().toFixed(1) }}%</span>
-            <span class="score-text">Score</span>
-          </div>
-          <div class="score-details">
-            <h2>Quiz Completed!</h2>
-            <p>You answered {{ score }} out of {{ totalQuestions }} questions correctly.</p>
-            <div class="performance" [class.excellent]="calculatePercentage() >= 90"
-              [class.good]="calculatePercentage() >= 70 && calculatePercentage() < 90"
-              [class.average]="calculatePercentage() >= 50 && calculatePercentage() < 70"
-              [class.poor]="calculatePercentage() < 50">
-              {{ calculatePercentage() >= 90 ? 'Excellent!' : calculatePercentage() >= 70 ? 'Good Job!' :
-              calculatePercentage() >= 50 ? 'Not Bad!' : 'Keep Practicing!' }}
-            </div>
-            <p class="save-note" *ngIf="saveNote" role="status">
-              {{ saveNote }}
-              <button type="button" class="link-btn" *ngIf="saveStatus === 'guest'" (click)="goToAccount()">Sign in</button>
-            </p>
-          </div>
-        </ion-card-content>
-      </ion-card>
+  <div class="screen" *ngIf="quizCompleted">
 
-      <!-- Results Details -->
-      <div class="results-details">
-        <h3>Detailed Results</h3>
+    <header class="topbar">
+      <button type="button" class="icon-btn" aria-label="Back to quizzes" (click)="goHome()">
+        <ion-icon name="close" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="topbar-title">Quiz complete</div>
+      <span class="topbar-spacer"></span>
+    </header>
 
-        <div *ngFor="let result of quizResults; let i = index" class="result-item">
-          <ion-card class="result-card" [class.correct]="result.isCorrect" [class.incorrect]="!result.isCorrect">
-            <ion-card-content>
-              <div class="result-header">
-                <span class="question-number">Q{{ i + 1 }}</span>
-                <ion-icon [name]="result.isCorrect ? 'checkmark-circle' : 'close-circle'"
-                  [class.correct-icon]="result.isCorrect" [class.incorrect-icon]="!result.isCorrect">
-                </ion-icon>
-              </div>
-
-              <!-- Image Preview for Picture Identification -->
-              <div class="image-preview">
-                <img [src]="result.image" [alt]="result.figureName" class="result-image">
-              </div>
-
-              <p class="result-question">{{ result.question }}</p>
-
-              <div class="answer-comparison">
-                <div class="answer-row">
-                  <span class="answer-label">Your answer:</span>
-                  <span class="user-answer" [class.correct]="result.isCorrect" [class.wrong]="!result.isCorrect">
-                    {{ result.userAnswer || 'Not answered' }}
-                  </span>
-                </div>
-
-                <div *ngIf="!result.isCorrect" class="answer-row">
-                  <span class="answer-label">Correct answer:</span>
-                  <span class="correct-answer">
-                    {{ result.correctAnswer }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="explanation">
-                <strong>Explanation:</strong> {{ getExplanation(result.correctAnswer) }}
-              </div>
-            </ion-card-content>
-          </ion-card>
+    <section class="score">
+      <div class="ring">
+        <svg width="168" height="168" viewBox="0 0 168 168" role="img"
+          [attr.aria-label]="'Score: ' + score + ' out of ' + totalQuestions + ', ' + percentage.toFixed(0) + ' percent'">
+          <circle class="ring-track" cx="84" cy="84" r="74" fill="none" stroke-width="14"/>
+          <circle class="ring-value" cx="84" cy="84" r="74" fill="none" stroke-width="14" stroke-linecap="round"
+            [attr.stroke-dasharray]="ringDash" transform="rotate(-90 84 84)"/>
+        </svg>
+        <div class="ring-label">
+          <div class="ring-score">{{ score }}<span>/{{ totalQuestions }}</span></div>
+          <div class="ring-percent">{{ percentage.toFixed(0) }}% correct</div>
         </div>
       </div>
+      <h1 class="score-title">{{ performanceTitle }}</h1>
+      <p class="score-hint">{{ performanceHint }}</p>
+      <p class="save-note" *ngIf="saveNote" role="status">
+        {{ saveNote }}
+        <button type="button" class="link-btn" *ngIf="saveStatus === 'guest'" (click)="goToAccount()">Sign in</button>
+      </p>
+    </section>
 
-      <!-- Action Buttons -->
-      <div class="results-actions">
-        <ion-button fill="outline" class="action-btn" (click)="retryQuiz()">
-          Try Again
-        </ion-button>
-        <ion-button fill="outline" class="action-btn" (click)="goHome()">
-          Back to Categories
-        </ion-button>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-icon ok"><ion-icon name="checkmark" aria-hidden="true"></ion-icon></span>
+        <div><div class="stat-num">{{ score }}</div><div class="stat-label">Correct</div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-icon bad"><ion-icon name="close" aria-hidden="true"></ion-icon></span>
+        <div><div class="stat-num">{{ missed }}</div><div class="stat-label">Missed</div></div>
       </div>
     </div>
+
+    <section class="review">
+      <div class="review-head">
+        <h2>Review your answers</h2>
+        <button type="button" class="link-btn" *ngIf="quizResults.length > reviewPreviewCount"
+          (click)="showAllReview = !showAllReview">
+          {{ showAllReview ? 'Show less' : 'Show all ' + quizResults.length }}
+        </button>
+      </div>
+
+      <ng-container *ngFor="let result of quizResults; let i = index">
+        <div class="review-item" *ngIf="showAllReview || i < reviewPreviewCount">
+          <button type="button" class="review-row" [attr.aria-expanded]="expandedReview === i" (click)="toggleReview(i)">
+            <img class="review-thumb" [src]="result.image" alt="">
+            <span class="review-text"><b>Q{{ i + 1 }}</b> · {{ result.correctAnswer }}</span>
+            <span class="mini-badge" [class.ok]="result.isCorrect" [class.bad]="!result.isCorrect">
+              <ion-icon [name]="result.isCorrect ? 'checkmark' : 'close'" aria-hidden="true"></ion-icon>
+            </span>
+          </button>
+
+          <div class="review-detail" *ngIf="expandedReview === i">
+            <div class="detail-row">
+              <span class="detail-label">Your answer</span>
+              <span class="detail-value" [class.wrong-text]="!result.isCorrect">{{ result.userAnswer || 'Not answered' }}</span>
+            </div>
+            <div class="detail-row" *ngIf="!result.isCorrect">
+              <span class="detail-label">Correct answer</span>
+              <span class="detail-value">{{ result.correctAnswer }}</span>
+            </div>
+            <p class="detail-explain">{{ getExplanation(result.correctAnswer) }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </section>
   </div>
 </ion-content>
+
+<ion-footer class="ion-no-border quiz-footer" *ngIf="!quizCompleted">
+  <div class="bottom-bar" *ngIf="!answered">
+    <button type="button" class="primary-btn" [disabled]="!isAllInputsFilled()" (click)="checkAnswer()">
+      Check answer
+    </button>
+  </div>
+
+  <div class="feedback-sheet" *ngIf="answered" role="status" aria-live="polite">
+    <div class="feedback-head">
+      <span class="feedback-icon" [class.ok]="isCorrect" [class.bad]="!isCorrect">
+        <ion-icon [name]="isCorrect ? 'checkmark' : 'close'" aria-hidden="true"></ion-icon>
+      </span>
+      <div>
+        <div class="feedback-title">{{ isCorrect ? 'Correct!' : 'Not quite' }}</div>
+        <div class="feedback-answer" *ngIf="!isCorrect">The answer is {{ getCurrentQuestion().answer }}</div>
+      </div>
+    </div>
+    <p class="feedback-explain">{{ getExplanation(getCurrentQuestion().answer) }}</p>
+    <div class="bottom-bar flush">
+      <button type="button" class="primary-btn" (click)="nextQuestion()">
+        {{ currentQuestion < totalQuestions - 1 ? 'Next question' : 'See results' }}
+        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+  </div>
+</ion-footer>
+
+<ion-footer class="ion-no-border quiz-footer" *ngIf="quizCompleted">
+  <div class="bottom-bar">
+    <button type="button" class="outline-btn" (click)="goHome()">All quizzes</button>
+    <button type="button" class="primary-btn" (click)="resetQuiz()">Try again</button>
+  </div>
+</ion-footer>

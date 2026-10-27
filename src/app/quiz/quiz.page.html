@@ -1,6 +1,5 @@
 <ion-content [fullscreen]="true" class="quiz-content">
 
-  <!-- ===================== QUESTION ===================== -->
   <div class="screen" *ngIf="!showResults && currentQuestion">
 
     <header class="topbar">
@@ -29,10 +28,8 @@
         <span class="badge">{{ getOptionLabel(i) }}</span>
         <span class="option-text">{{ option }}</span>
 
-        <!-- selected (before checking) -->
         <svg *ngIf="optionState(i) === 'selected'" aria-hidden="true" class="status-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
 
-        <!-- after checking: icon + word, never colour alone -->
         <span class="status" *ngIf="optionState(i) === 'correct'">
           <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
           Correct
@@ -45,7 +42,6 @@
     </div>
   </div>
 
-  <!-- ===================== RESULTS ===================== -->
   <div class="screen" *ngIf="showResults">
 
     <header class="topbar">
@@ -131,10 +127,8 @@
   </div>
 </ion-content>
 
-<!-- ===================== BOTTOM AREA ===================== -->
 <ion-footer class="ion-no-border quiz-footer" *ngIf="!showResults && currentQuestion">
 
-  <!-- Before checking: back arrow + Check answer -->
   <div class="bottom-bar" *ngIf="!isRevealed">
     <button type="button" class="back-btn" aria-label="Previous question" [disabled]="isFirstQuestion"
       (click)="previousQuestion()">
@@ -145,7 +139,6 @@
     </button>
   </div>
 
-  <!-- After checking: instant feedback sheet -->
   <div class="feedback-sheet" *ngIf="isRevealed" role="status" aria-live="polite">
     <div class="feedback-head">
       <span class="feedback-icon" [class.ok]="isCorrectNow" [class.bad]="!isCorrectNow">

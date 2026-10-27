@@ -1,11 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start" *ngIf="showBackButton">
-      <ion-back-button></ion-back-button>
+      <ion-back-button [defaultHref]="backHref" text=""></ion-back-button>
     </ion-buttons>
     <div class="bar-text" [class.has-back]="showBackButton">
       <h1 class="page-title">{{ title }}</h1>
       <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
     </div>
+    <ion-buttons slot="end">
+      <ng-content></ng-content>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>

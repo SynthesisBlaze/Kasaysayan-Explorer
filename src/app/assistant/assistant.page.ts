@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, DestroyRef, inject, OnDestroy, OnInit, Vi
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
+import { AppBarComponent } from '../shared/app-bar/app-bar.component'
 import { AngularFireAuth } from '@angular/fire/compat/auth'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { IonContent, IonicModule } from '@ionic/angular'
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-assistant',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IonicModule],
+  imports: [CommonModule, FormsModule, RouterLink, IonicModule, AppBarComponent],
   templateUrl: './assistant.page.html',
   styleUrls: ['./assistant.page.scss']
 })
@@ -79,6 +80,11 @@ export class AssistantPage implements OnInit, OnDestroy {
     this.error = ''
     this.notice = ''
     this.busy = false
+  }
+
+  askSuggestion(suggestion: string): void {
+    this.prompt = suggestion
+    void this.send()
   }
 
   async send(): Promise<void> {

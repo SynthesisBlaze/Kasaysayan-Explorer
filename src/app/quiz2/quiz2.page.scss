@@ -1,492 +1,107 @@
-// Use Ionic CSS variables; remove hardcoded palette
+@use '../quiz/quiz.page';
 
-ion-content {
-    --background: var(--ion-background-color);
-    color: var(--ion-text-color);
+.icon-btn ion-icon,
+.feedback-icon ion-icon,
+.stat-icon ion-icon {
+  font-size: 22px;
 }
 
-.container {
-    background-color: var(--ion-background-color);
-    padding: 16px;
-    max-width: 800px;
-    margin: 0 auto;
+.mini-badge ion-icon {
+  font-size: 16px;
 }
 
-.quiz-progress {
-    text-align: right;
-    min-width: 150px;
-    margin-bottom: 10px;
-
-    @media (max-width: 768px) {
-        text-align: center;
-        width: 100%;
-    }
-
-    .progress-text {
-        color: var(--ion-text-color);
-        font-weight: 600;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .progress-bar {
-        background: var(--ion-color-medium);
-        border-radius: var(--app-radius-button);
-        height: 8px;
-        overflow: hidden;
-
-        .progress-fill {
-            height: 100%;
-            background: var(--ion-color-primary);
-            transition: width 0.3s ease;
-            border-radius: 3px;
-        }
-    }
+.primary-btn ion-icon {
+  font-size: 20px;
 }
 
-// Question Container
-.question-container {
-    padding: 30px 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
+.picture {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 34vh;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--ion-color-step-150);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
 
-// Image Container
-.image-container {
-    position: relative;
+  img {
     width: 100%;
-    max-width: 500px;
-    margin: 0 auto 30px auto;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-
-    .question-image {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .image-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--ion-card-background, var(--ion-item-background));
-    }
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 }
 
-.question-text {
-    background: var(--ion-card-background, var(--ion-item-background));
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    border-left: 4px solid var(--ion-color-primary);
-
-    p {
-        color: var(--ion-text-color);
-        font-size: 1.2rem;
-        line-height: 1.6;
-        margin: 0;
-        text-align: center;
-    }
+.picture-question {
+  font-size: var(--app-fs-title);
+  line-height: 1.4;
 }
 
-// Answer Section with Dynamic Input Support
-.answer-section {
-    .input-instruction {
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        p {
-            color: var(--ion-text-color);
-            text-align: center;
-            font-size: 1rem;
-            font-weight: 500;
-            margin: 0;
-            line-height: 1.5;
-        }
-    }
-
-    .multi-input-container {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-
-    .input-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .answer-input-part {
-        --background: var(--ion-card-background, var(--ion-item-background));
-        --color: var(--ion-text-color);
-        --placeholder-color: rgba(127,127,127,0.5);
-        --placeholder-opacity: 1;
-        --padding-start: 16px;
-        --padding-end: 16px;
-        border-radius: var(--app-radius-button);
-        font-size: 1.1rem;
-        border: 3px solid var(--ion-color-medium);
-        height: 56px;
-        text-align: center;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        background: var(--ion-card-background, var(--ion-item-background));
-
-        &:focus {
-            border-color: var(--ion-color-primary);
-            box-shadow: 0 6px 16px rgba(26, 32, 28, 0.3);
-            transform: translateY(-2px);
-            background: var(--ion-card-background, var(--ion-item-background));
-        }
-
-        &:hover:not(:focus) {
-            border-color: var(--ion-color-primary);
-            background: var(--ion-card-background, var(--ion-item-background));
-        }
-
-        &::placeholder {
-            color: rgba(127,127,127,0.5);
-            font-weight: 500;
-        }
-
-        &[disabled] {
-            background: var(--ion-color-light);
-            border-color: var(--ion-color-medium);
-            color: var(--ion-text-color);
-            opacity: 0.7;
-        }
-
-        @media (max-width: 480px) {
-            font-size: 1rem;
-            height: 50px;
-            --padding-start: 12px;
-            --padding-end: 12px;
-        }
-    }
-
-    .submit-btn {
-        --background: var(--ion-color-primary);
-        --color: var(--ion-color-primary-contrast);
-        --background-hover: var(--ion-color-primary);
-        --background-activated: var(--ion-color-primary);
-        --border-radius: 12px;
-        --box-shadow: 0 4px 12px rgba(26, 32, 28, 0.3);
-        height: 56px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-top: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        background: var(--ion-color-primary);
-
-        ion-icon {
-            font-size: 24px;
-        }
-
-        &:hover:not([disabled]) {
-            transform: translateY(-2px);
-            --box-shadow: 0 6px 16px rgba(26, 32, 28, 0.4);
-        }
-
-        &[disabled] {
-            opacity: 0.5;
-            background: var(--ion-color-primary);
-        }
-    }
+.answer-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-3);
 }
 
-// Simple Feedback (Only Next Button)
-.simple-feedback {
-    margin-top: 25px;
-
-    .next-btn {
-        --background: var(--ion-color-primary);
-        --color: var(--ion-color-primary-contrast);
-        --background-hover: var(--ion-color-primary);
-        --background-activated: var(--ion-color-primary);
-        --border-radius: 8px;
-        font-weight: 600;
-        height: 50px;
-        font-size: 1.1rem;
-        background: var(--ion-color-primary);
-    }
-}
-
-// Results 
-.results-section {
-    .score-card {
-        background: var(--ion-card-background, var(--ion-item-background));
-        border-radius: var(--app-radius-card);
-        box-shadow: 0 4px 16px rgba(54, 67, 58, 0.1);
-        margin-bottom: 24px;
-
-        .score-content {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            padding: 24px;
-
-            @media (max-width: 480px) {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
-            }
-        }
-
-        .score-circle {
-            background: var(--ion-color-primary);
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: var(--ion-color-primary-contrast);
-            flex-shrink: 0;
-
-            .score-percentage {
-                font-size: 1.8rem;
-                font-weight: 700;
-                line-height: 1;
-            }
-
-            .score-text {
-                font-size: 0.9rem;
-                opacity: 0.9;
-            }
-        }
-
-        .score-details {
-            flex: 1;
-
-            h2 {
-                color: var(--ion-text-color);
-                margin: 0 0 8px 0;
-                font-size: 1.5rem;
-                font-weight: 600;
-            }
-
-            p {
-                color: var(--ion-text-color);
-                margin: 0 0 12px 0;
-                font-size: 1rem;
-            }
-
-            .performance {
-                font-weight: 600;
-                font-size: 1.1rem;
-                margin: 0;
-
-                &.excellent {
-                    color: var(--ion-color-success);
-                }
-
-                &.good {
-                    color: var(--ion-color-primary);
-                }
-
-                &.average {
-                    color: var(--ion-color-warning);
-                }
-
-                &.poor {
-                    color: var(--ion-color-danger);
-                }
-            }
-        }
-    }
-}
-
-// Results Details
-.results-details {
-    h3 {
-        color: var(--ion-text-color);
-        margin-bottom: 16px;
-        font-size: 1.3rem;
-    }
-}
-
-.result-item {
-    margin-bottom: 16px;
-}
-
-.result-card {
-    border-radius: 12px;
-
-    &.correct {
-        border-left: 4px solid var(--ion-color-success);
-    }
-
-    &.incorrect {
-        border-left: 4px solid var(--ion-color-danger);
-    }
-}
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    .question-number {
-        color: var(--ion-text-color);
-        font-weight: 600;
-        font-size: 1rem;
-    }
-}
-
-.correct-icon {
-    color: var(--ion-color-success);
-    font-size: 1.5rem;
-}
-
-.incorrect-icon {
-    color: var(--ion-color-danger);
-    font-size: 1.5rem;
-}
-
-.image-preview {
-    width: 100%;
-    max-width: 200px;
-    height: 120px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    border: 2px solid var(--ion-color-primary);
-
-    .result-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-}
-
-.result-question {
-    color: var(--ion-text-color);
-    font-weight: 500;
-    margin-bottom: 12px;
-    line-height: 1.4;
-    font-size: 1rem;
-}
-
-.answer-comparison {
-    .answer-row {
-        display: flex;
-        margin-bottom: 8px;
-
-        .answer-label {
-            font-weight: 600;
-            color: var(--ion-text-color);
-            min-width: 150px;
-            margin-right: 8px;
-        }
-
-        .user-answer {
-            &.correct {
-                color: var(--ion-color-success);
-                font-weight: 600;
-            }
-
-            &.wrong {
-                color: var(--ion-color-danger);
-                font-weight: 600;
-                text-decoration: line-through;
-            }
-        }
-
-        .correct-answer {
-            color: var(--ion-color-success);
-            font-weight: 600;
-        }
-    }
-}
-
-.explanation {
-    background: var(--ion-color-step-100);
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 12px;
-    font-size: 0.9rem;
-    color: var(--ion-text-color);
-    line-height: 1.4;
-
-    strong {
-        color: var(--ion-text-color);
-    }
-}
-
-// Results Actions
-.results-actions {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 32px;
-    flex-wrap: wrap;
-
-    .action-btn {
-        --border-radius: 12px;
-        min-width: 160px;
-        height: 50px;
-        font-weight: 600;
-
-        --color: var(--ion-color-primary-contrast);
-        --background: var(--ion-color-primary);
-        --border-color: var(--ion-color-primary);
-
-        &:hover {
-            --background: var(--ion-color-primary);
-        }
-    }
-}
-
-// Responsive adjustments
-@media (max-width: 480px) {
-    .question-container {
-        padding: 20px 15px;
-    }
-
-    .image-container .question-image {
-        height: 250px;
-    }
-
-    .question-text p {
-        font-size: 1.1rem;
-    }
-
-    .multi-input-container {
-        gap: 8px;
-    }
-
-    .answer-input-part {
-        min-width: 70px;
-    }
-}
-// What happened to the score (saved, or sign in to save it)
-.save-note {
-  margin: 8px 0 0;
+.answer-help {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  margin: 0;
   font-size: var(--app-fs-body-sm);
-  color: var(--ion-text-color);
+  color: var(--ion-color-step-700);
+
+  ion-icon {
+    font-size: 16px;
+  }
 }
 
-.link-btn {
-  min-height: var(--app-touch-min);
-  padding: 0 var(--app-space-1);
-  border: none;
-  background: transparent;
+.word-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-2);
+}
+
+.word-input {
+  min-width: 64px;
+  max-width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 var(--app-space-3);
+  border-radius: var(--app-radius-button);
+  border: 2px solid var(--ion-color-step-300);
+  background: var(--ion-card-background, var(--ion-item-background));
   color: var(--ion-text-color);
   font: inherit;
+  font-size: 18px;
   font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:focus {
+    border-color: var(--ion-color-primary);
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
+.word-inputs.is-correct .word-input {
+  border-color: var(--q-ok);
+  background: var(--q-ok-tint);
+}
+
+.word-inputs.is-wrong .word-input {
+  border-color: var(--q-bad);
+  background: var(--q-bad-tint);
+  text-decoration: line-through;
+}
+
+.review-thumb {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--app-radius-sm);
+  object-fit: cover;
 }

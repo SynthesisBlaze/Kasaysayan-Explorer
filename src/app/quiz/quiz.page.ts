@@ -1,4 +1,3 @@
-// quiz.page.ts - multiple-choice quiz with instant feedback and a review-style results screen
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonFooter, Platform } from '@ionic/angular/standalone';
@@ -20,7 +19,6 @@ export class QuizPage implements OnInit {
   questions: Question[] = [];
   currentQuestionIndex = 0;
   userAnswers: (number | null)[] = [];
-  /** true once the student pressed "Check answer" for that question (answer is then locked) */
   revealed: boolean[] = [];
   showResults = false;
   quizResults: QuizResult[] = [];
@@ -28,14 +26,11 @@ export class QuizPage implements OnInit {
   totalQuestions = 0;
   percentage = 0;
   categoryLabel = '';
-  /** Which quiz this is, as saved with the account's best score. */
   private quizKey = 'places';
 
-  /** What happened to the score after the quiz ended (shown on the results screen). */
   saveNote = '';
   saveStatus: 'none' | 'guest' | 'saved' | 'error' = 'none';
 
-  /** Results screen: which review row is open, and whether the whole list is shown */
   expandedReview: number | null = null;
   showAllReview = false;
   readonly reviewPreviewCount = 3;
@@ -57,7 +52,7 @@ export class QuizPage implements OnInit {
       const requested = String(category).toLowerCase();
       this.quizKey = MULTIPLE_CHOICE_QUIZZES.includes(requested) ? requested : 'places';
       this.categoryLabel = String(category).toUpperCase();
-      this.questions = this.quizService.getQuestionsByCategory(category);
+      this.questions = this.quizService.getQuestionsByCategory(requested);
       this.resetState();
     });
   }
@@ -78,7 +73,6 @@ export class QuizPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    // Handle hardware back button
     this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(10, () => {
       this.handleBackNavigation();
     });
@@ -90,7 +84,6 @@ export class QuizPage implements OnInit {
     }
   }
 
-  // Handle browser back button/gesture
   @HostListener('window:popstate', ['$event'])
   onPopState(event: any) {
     if (!this.showResults) {
@@ -111,7 +104,6 @@ export class QuizPage implements OnInit {
     }
   }
 
-  /** Close (X) button and first-question back: ask before throwing progress away. */
   async confirmExitQuiz() {
     const ok = await this.ui.confirm({
       header: 'Exit quiz?',
@@ -125,9 +117,6 @@ export class QuizPage implements OnInit {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Current question
-  // ---------------------------------------------------------------------------
   get currentQuestion(): Question {
     return this.questions[this.currentQuestionIndex];
   }
@@ -152,12 +141,10 @@ export class QuizPage implements OnInit {
     return this.selectedIndex === this.currentQuestion.correctAnswer;
   }
 
-  /** Check button stays disabled until something is selected (no "no answer" alert needed). */
   get canCheck(): boolean {
     return this.selectedIndex !== null && !this.isRevealed;
   }
 
-  /** Progress segment is filled for finished questions (and the current one once answered). */
   segmentDone(i: number): boolean {
     return i < this.currentQuestionIndex || (i === this.currentQuestionIndex && this.isRevealed);
   }
@@ -172,7 +159,7 @@ export class QuizPage implements OnInit {
   }
 
   selectAnswer(optionIndex: number) {
-    if (this.isRevealed) return; // locked after checking
+    if (this.isRevealed) return;
     this.userAnswers[this.currentQuestionIndex] = optionIndex;
   }
 
@@ -219,7 +206,6 @@ export class QuizPage implements OnInit {
     void this.saveScore();
   }
 
-  /** Signed-in accounts keep their highest score; guests can play but nothing is saved. */
   private async saveScore() {
     const result = await this.quizScores.saveScore(this.quizKey, this.score, this.totalQuestions);
     if (result.status === 'guest') {
@@ -242,14 +228,10 @@ export class QuizPage implements OnInit {
     this.router.navigate(['/tabs/account']);
   }
 
-  // ---------------------------------------------------------------------------
-  // Results
-  // ---------------------------------------------------------------------------
   get missed(): number {
     return this.totalQuestions - this.score;
   }
 
-  /** Score ring: stroke-dasharray for a circle of radius 74 */
   get ringDash(): string {
     const circumference = 2 * Math.PI * 74;
     return `${(this.percentage / 100) * circumference} ${circumference}`;
@@ -277,6 +259,6 @@ export class QuizPage implements OnInit {
   }
 
   getOptionLabel(index: number): string {
-    return String.fromCharCode(65 + index); // A, B, C, D
+    return String.fromCharCode(65 + index);
   }
 }

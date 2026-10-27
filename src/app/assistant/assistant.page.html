@@ -1,65 +1,77 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/discover"></ion-back-button>
-    </ion-buttons>
-    <ion-title>History assistant</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="newChat()" [disabled]="busy || !messages.length" aria-label="Clear conversation and start a new chat">
-        New chat
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-app-bar title="History assistant" subtitle="Ask in English or Filipino" [showBackButton]="true">
+  <ion-button class="new-chat" (click)="newChat()" [disabled]="busy || !messages.length"
+    aria-label="Clear conversation and start a new chat">
+    <ion-icon slot="icon-only" name="create-outline" aria-hidden="true"></ion-icon>
+  </ion-button>
+</app-app-bar>
 
 <ion-content>
   <main class="chat-layout">
-    <section class="intro" aria-labelledby="assistant-heading">
-      <p class="eyebrow">POWERED BY CLOUDFLARE WORKERS AI</p>
-      <h1 id="assistant-heading">Explore our past, one question at a time.</h1>
-      <p>Ask about Philippine history in English or Filipino, then follow your curiosity.</p>
-      <p class="disclaimer">AI can make mistakes. Verify important facts with reliable historical sources.</p>
+    <section class="intro" *ngIf="!messages.length" aria-labelledby="assistant-heading">
+      <div class="intro-icon" aria-hidden="true"><ion-icon name="chatbubbles"></ion-icon></div>
+      <h1 id="assistant-heading">Explore our past, one question at a time</h1>
+      <p>Ask about Philippine history, then follow your curiosity.</p>
     </section>
 
-    <p *ngIf="authLoading" role="status">Checking your account…</p>
+    <div class="state-message" *ngIf="authLoading" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Checking your account…</p>
+    </div>
+
     <section *ngIf="!authLoading && !signedIn" class="sign-in-card">
-      <h2>Sign in to start a conversation</h2>
-      <p>The assistant requires an account to help keep usage fair.</p>
-      <ion-button routerLink="/tabs/account">Go to account</ion-button>
+      <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+      <h2>Sign in to start chatting</h2>
+      <p>The assistant needs an account so everyone gets a fair share of questions.</p>
+      <ion-button routerLink="/tabs/account" expand="block">Sign in or register</ion-button>
     </section>
 
     <section *ngIf="signedIn && !messages.length" class="suggestions" aria-label="Suggested questions">
-      <h2>Start with a question</h2>
-      <ion-button *ngFor="let suggestion of suggestions" fill="outline" expand="block"
-        [disabled]="busy" (click)="prompt = suggestion">
-        {{ suggestion }}
-      </ion-button>
+      <h2>Try asking</h2>
+      <button type="button" class="suggestion tappable" *ngFor="let suggestion of suggestions"
+        [disabled]="busy" (click)="askSuggestion(suggestion)">
+        <ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon>
+        <span>{{ suggestion }}</span>
+      </button>
     </section>
 
     <section class="transcript" role="log" aria-label="Conversation" aria-live="polite" [attr.aria-busy]="busy">
-      <article *ngFor="let message of messages" class="message" [class.user-message]="message.role === 'user'">
-        <h2>{{ message.role === 'user' ? 'You' : 'History assistant' }}</h2>
+      <article *ngFor="let message of messages" class="message"
+        [class.user-message]="message.role === 'user'" [class.model-message]="message.role !== 'user'">
+        <h2 class="sr-only">{{ message.role === 'user' ? 'You' : 'History assistant' }}</h2>
         <p>{{ message.text }}</p>
       </article>
+
+      <div *ngIf="busy" class="message model-message typing" role="status" aria-label="Thinking about your question">
+        <span></span><span></span><span></span>
+      </div>
     </section>
-    <p *ngIf="busy" class="pending" role="status">
-      <ion-spinner name="dots" aria-hidden="true"></ion-spinner>
-      Thinking about your question…
+
+    <p *ngIf="notice" class="notice" role="status">
+      <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>{{ notice }}
     </p>
-    <p *ngIf="notice" class="notice" role="status">{{ notice }}</p>
-    <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
+    <p *ngIf="error" class="error-message" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>{{ error }}
+    </p>
+
+    <p class="disclaimer">AI can make mistakes. Check important facts with reliable historical sources.</p>
   </main>
 </ion-content>
 
 <ion-footer *ngIf="signedIn">
   <div class="composer-wrapper">
     <form (ngSubmit)="send()" class="composer">
-      <ion-textarea name="question" label="Your history question" labelPlacement="stacked"
-        placeholder="What would you like to learn?" [(ngModel)]="prompt" [autoGrow]="true"
-        [maxlength]="messageMax" [counter]="true" [rows]="2" [disabled]="busy"
+      <ion-textarea name="question" aria-label="Your history question"
+        placeholder="Ask a history question…" [(ngModel)]="prompt" [autoGrow]="true"
+        [maxlength]="messageMax" [rows]="1" [disabled]="busy"
         aria-describedby="assistant-privacy"></ion-textarea>
-      <ion-button type="submit" [disabled]="!canSend">{{ busy ? 'Waiting…' : 'Send' }}</ion-button>
+      <button type="submit" class="send-btn" [disabled]="!canSend" [attr.aria-label]="busy ? 'Waiting for answer' : 'Send'">
+        <ion-spinner *ngIf="busy" name="crescent" aria-hidden="true"></ion-spinner>
+        <ion-icon *ngIf="!busy" name="arrow-up" aria-hidden="true"></ion-icon>
+      </button>
     </form>
-    <p id="assistant-privacy" class="privacy-note">Your question and recent chat are sent to Cloudflare for AI processing. This app does not save the conversation. Do not share personal information.</p>
+    <p id="assistant-privacy" class="privacy-note">
+      Sent to Cloudflare AI to answer. Not saved by this app. Don't share personal info.
+      <span class="counter" *ngIf="prompt.length > messageMax * 0.8">{{ prompt.length }}/{{ messageMax }}</span>
+    </p>
   </div>
 </ion-footer>
