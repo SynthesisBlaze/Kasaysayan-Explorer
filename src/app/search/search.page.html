@@ -1,59 +1,61 @@
-<app-app-bar title="Search"></app-app-bar>
+<app-app-bar title="Search" subtitle="Find people, places, events and periods"></app-app-bar>
 
 <ion-content class="search-content">
-  <ion-searchbar
-    placeholder="Search historical person, place, event, or period..."
-    color="light"
-    (ionInput)="onSearch($event)"
-  ></ion-searchbar>
+  <div class="search-page">
+    <ion-searchbar
+      placeholder="Search people, places, events…"
+      color="light"
+      [debounce]="150"
+      (ionInput)="onSearch($event)"
+      (ionClear)="clearSearch()"
+    ></ion-searchbar>
 
-  <!-- Always visible category cards -->
-  <div class="categories">
-    <div class="category" [routerLink]="['/historical-places']">
-      <img src="assets/images/Places.jpg" alt="Places" />
-      <span>Places</span>
-    </div>
+    <ng-container *ngIf="!searchTerm">
+      <h2 class="section-label">Browse by category</h2>
+      <div class="categories">
+        <a class="category tappable" *ngFor="let cat of categories" [routerLink]="[cat.route]"
+          [attr.aria-label]="'Browse ' + cat.label">
+          <img [src]="cat.image" alt="" />
+          <span class="category-label">
+            <ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>
+            {{ cat.label }}
+          </span>
+        </a>
+      </div>
+    </ng-container>
 
-    <div class="category" [routerLink]="['/historical-figures']">
-      <img src="assets/images/Figures.jpg" alt="Figures" />
-      <span>Figures</span>
-    </div>
+    <ng-container *ngIf="searchTerm">
+      <div class="state-message" *ngIf="loading" role="status">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Searching…</p>
+      </div>
 
-    <div class="category" [routerLink]="['/historical-events']">
-      <img src="assets/images/Events.jpg" alt="Events" />
-      <span>Events</span>
-    </div>
+      <ng-container *ngIf="!loading">
+        <p class="result-count" aria-live="polite">
+          {{ filteredResults.length }} {{ filteredResults.length === 1 ? 'result' : 'results' }}
+        </p>
 
-    <div class="category" [routerLink]="['/historical-periods']">
-      <img src="assets/images/Government.jpg" alt="Periods" />
-      <span>Periods</span>
-    </div>
-  </div>
+        <ion-list class="results" *ngIf="filteredResults.length > 0" lines="none">
+          <ion-item button detail="true" *ngFor="let item of filteredResults" (click)="openDetail(item)">
+            <ion-thumbnail slot="start">
+              <img [src]="item.imgPath" alt="" />
+            </ion-thumbnail>
+            <ion-label>
+              <h2>{{ item.name }}</h2>
+              <p class="result-category">
+                <ion-icon [name]="categoryIcon(item.category)" aria-hidden="true"></ion-icon>
+                {{ item.category | titlecase }}
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
 
-  <!-- Overlay Search Results -->
-  <div
-    class="search-overlay"
-    *ngIf="searchTerm && filteredResults.length > 0"
-  >
-    <ion-list>
-      <ion-item
-        button
-        *ngFor="let item of filteredResults"
-        (click)="openDetail(item)"
-      >
-        <ion-thumbnail slot="start">
-          <img [src]="item.imgPath" alt="{{ item.name }}" />
-        </ion-thumbnail>
-        <ion-label>
-          <h2>{{ item.name }}</h2>
-          <p>{{ item.category | titlecase }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </div>
-
-  <!-- Overlay for no results -->
-  <div class="search-overlay no-results" *ngIf="searchTerm && filteredResults.length === 0">
-    <p>No results found for "{{ searchTerm }}"</p>
+        <div class="state-message" *ngIf="filteredResults.length === 0">
+          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <h3>No results</h3>
+          <p>Nothing matches "{{ searchTerm }}". Try a shorter word or check the spelling.</p>
+        </div>
+      </ng-container>
+    </ng-container>
   </div>
 </ion-content>

@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { FiguresService } from '../../services/figures.service';
-
 
 @Component({
   selector: 'app-historical-figures',
@@ -11,10 +11,13 @@ import { FiguresService } from '../../services/figures.service';
   styleUrls: ['./historical-figures.page.scss'],
   imports: [IonicModule, CommonModule, FormsModule],
 })
-
-export class HistoricalFiguresPage implements OnInit {
+export class HistoricalFiguresPage implements OnInit, OnDestroy {
   figures: any[] = [];
   loading = true;
+  loadError = false;
+  searchTerm = '';
+  readonly skeletons = [1, 2, 3, 4, 5, 6];
+  private sub?: Subscription;
 
   constructor(
     private navCtrl: NavController,
@@ -25,21 +28,38 @@ export class HistoricalFiguresPage implements OnInit {
     this.loadFigures();
   }
 
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  get filteredFigures(): any[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.figures
+      .filter((item) => !term || (item.name || '').toLowerCase().includes(term))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }
+
   loadFigures() {
-    // Delay Firebase calls to ensure they run within proper injection context
+    this.loading = true;
+    this.loadError = false;
+    this.sub?.unsubscribe();
     setTimeout(() => {
-      this.figuresService.getFigures().subscribe({
+      this.sub = this.figuresService.getFigures().subscribe({
         next: (data) => {
           this.figures = data;
           this.loading = false;
-          console.log('Figures loaded:', this.figures);
         },
         error: (err) => {
           console.error('Error loading figures:', err);
           this.loading = false;
+          this.loadError = true;
         }
       });
     }, 0);
+  }
+
+  onSearch(event: any) {
+    this.searchTerm = event.detail.value || '';
   }
 
   goBack() {

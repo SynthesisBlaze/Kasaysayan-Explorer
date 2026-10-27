@@ -21,7 +21,6 @@ class AssistantRequestError extends Error {
   }
 }
 
-/** Keep complete exchanges, leaving room for the new question. */
 export function buildAssistantConversation(history: AssistantMessage[], question: string): AssistantMessage[] {
   const messages = history.slice(-18).map(({ role, text }) => ({ role, text }))
   while (messages.length && messages.reduce((total, message) => total + message.text.length, 0) + question.length > CONVERSATION_MAX) {

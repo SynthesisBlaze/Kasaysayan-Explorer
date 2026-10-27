@@ -1,7 +1,6 @@
-<app-app-bar title="Account"></app-app-bar>
+<app-app-bar title="Account" subtitle="Your profile and settings"></app-app-bar>
 
 <ion-content>
-  <!-- Header: welcomes a guest, or introduces the signed-in person -->
   <header class="hero" *ngIf="!authLoading">
     <ng-container *ngIf="accountRole === 'guest'">
       <div class="emblem" aria-hidden="true">
@@ -25,7 +24,6 @@
       <p>Checking account…</p>
     </div>
 
-    <!-- Signed out: one card for sign in and register -->
     <section class="account-card auth-card" *ngIf="!authLoading && accountRole === 'guest'" aria-label="Sign in or register">
       <p class="account-notice" role="status" *ngIf="authNotice">
         <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
@@ -117,7 +115,6 @@
       </div>
     </section>
 
-    <!-- Signed in: the user's details -->
     <section class="account-section" *ngIf="!authLoading && accountRole !== 'guest'" aria-labelledby="details-heading">
       <h2 id="details-heading">Your details</h2>
 
@@ -145,7 +142,6 @@
       </ion-list>
     </section>
 
-    <!-- Signed in: best score for each quiz -->
     <section class="account-section" *ngIf="!authLoading && accountRole !== 'guest'" aria-labelledby="scores-heading">
       <h2 id="scores-heading">Quiz scores</h2>
 
@@ -165,7 +161,6 @@
       <p class="card-hint">Only your highest score for each quiz is kept.</p>
     </section>
 
-    <!-- Settings (for everyone) -->
     <section class="account-section" aria-labelledby="settings-heading">
       <h2 id="settings-heading">Settings</h2>
 

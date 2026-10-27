@@ -1,27 +1,50 @@
-<ion-content class="ion-padding page-bg">
+<ion-content class="page-bg">
+  <div class="list-page">
 
-  <!-- Custom Header -->
-  <div class="custom-header">
-    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </button>
-    <h1 class="page-title">Historical Places</h1>
+    <div class="custom-header">
+      <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="page-title">Historical Places</h1>
+        <p class="page-count" *ngIf="!loading && !loadError">{{ places.length }} places</p>
+      </div>
+    </div>
+
+    <ion-searchbar class="list-search" placeholder="Search places" color="light" [debounce]="150"
+      [value]="searchTerm" (ionInput)="onSearch($event)" *ngIf="!loadError"></ion-searchbar>
+
+    <div class="card-grid" *ngIf="loading" role="status" aria-label="Loading places">
+      <div class="skeleton-block card-skeleton" *ngFor="let s of skeletons"></div>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && loadError">
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h3>Couldn't load places</h3>
+      <p>Check your internet connection and try again.</p>
+      <ion-button fill="outline" (click)="loadPlaces()">Try again</ion-button>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && !loadError && filteredPlaces.length === 0">
+      <ion-icon [name]="searchTerm ? 'search-outline' : 'location-outline'" aria-hidden="true"></ion-icon>
+      <h3>{{ searchTerm ? 'No matches' : 'Nothing here yet' }}</h3>
+      <p *ngIf="searchTerm">No places match "{{ searchTerm }}".</p>
+    </div>
+
+    <div class="card-grid" *ngIf="!loading && !loadError">
+      <div
+        class="item-card tappable"
+        role="button"
+        tabindex="0"
+        *ngFor="let place of filteredPlaces"
+        [attr.aria-label]="place.name"
+        (click)="openPlace(place.id)"
+        (keydown.enter)="openPlace(place.id)"
+        [style.background-image]="'url(' + place.imgPath + ')'"
+      >
+        <div class="item-title">{{ place.name }}</div>
+      </div>
+    </div>
+
   </div>
-
-  <!-- Loading Spinner -->
-  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
-
-  <!-- Events Grid -->
-  <div class="places-grid" *ngIf="!loading">
-    <ion-card
-      class="place-card"
-      *ngFor="let place of places"
-      (click)="openPlace(place.id)"
-      [style.background-image]="'url(' + place.imgPath + ')'"
-    >
-      <div class="overlay"></div>
-      <div class="place-title">{{ place.name }}</div>
-    </ion-card>
-  </div>
-
 </ion-content>

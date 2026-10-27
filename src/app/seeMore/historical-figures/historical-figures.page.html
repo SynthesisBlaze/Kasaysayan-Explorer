@@ -1,27 +1,50 @@
-<ion-content class="ion-padding page-bg">
+<ion-content class="page-bg">
+  <div class="list-page">
 
-  <!-- Custom Header -->
-  <div class="custom-header">
-    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </button>
-    <h1 class="page-title">Historical Figures</h1>
+    <div class="custom-header">
+      <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="page-title">Historical Figures</h1>
+        <p class="page-count" *ngIf="!loading && !loadError">{{ figures.length }} figures</p>
+      </div>
+    </div>
+
+    <ion-searchbar class="list-search" placeholder="Search figures" color="light" [debounce]="150"
+      [value]="searchTerm" (ionInput)="onSearch($event)" *ngIf="!loadError"></ion-searchbar>
+
+    <div class="card-grid" *ngIf="loading" role="status" aria-label="Loading figures">
+      <div class="skeleton-block card-skeleton" *ngFor="let s of skeletons"></div>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && loadError">
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h3>Couldn't load figures</h3>
+      <p>Check your internet connection and try again.</p>
+      <ion-button fill="outline" (click)="loadFigures()">Try again</ion-button>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && !loadError && filteredFigures.length === 0">
+      <ion-icon [name]="searchTerm ? 'search-outline' : 'person-outline'" aria-hidden="true"></ion-icon>
+      <h3>{{ searchTerm ? 'No matches' : 'Nothing here yet' }}</h3>
+      <p *ngIf="searchTerm">No figures match "{{ searchTerm }}".</p>
+    </div>
+
+    <div class="card-grid" *ngIf="!loading && !loadError">
+      <div
+        class="item-card tappable"
+        role="button"
+        tabindex="0"
+        *ngFor="let figure of filteredFigures"
+        [attr.aria-label]="figure.name"
+        (click)="openFigure(figure.id)"
+        (keydown.enter)="openFigure(figure.id)"
+        [style.background-image]="'url(' + figure.imgPath + ')'"
+      >
+        <div class="item-title">{{ figure.name }}</div>
+      </div>
+    </div>
+
   </div>
-
-  <!-- Loading Spinner -->
-  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
-
-  <!-- Events Grid -->
-  <div class="figures-grid" *ngIf="!loading">
-    <ion-card
-      class="figure-card"
-      *ngFor="let figure of figures"
-      (click)="openFigure(figure.id)"
-      [style.background-image]="'url(' + figure.imgPath + ')'"
-    >
-      <div class="overlay"></div>
-      <div class="figure-title">{{ figure.name }}</div>
-    </ion-card>
-  </div>
-
 </ion-content>

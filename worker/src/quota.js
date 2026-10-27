@@ -1,6 +1,5 @@
 import { nextUsage } from './assistant.js'
 
-/** SQLite-backed Durable Object. Only counters are stored, never chat text. */
 export class AssistantQuota {
   constructor(state) {
     this.state = state

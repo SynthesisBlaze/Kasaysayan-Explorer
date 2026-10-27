@@ -35,7 +35,6 @@ export function validateMessages(data) {
     if (!content || content.length > MAX_MESSAGE_LENGTH || length > MAX_CONVERSATION_LENGTH) {
       throw new AssistantError('invalid-argument', 'Shorten your question or start a new chat.', 400)
     }
-    // Do not forward client-supplied system messages, options, or tool definitions.
     return { role: role === 'model' ? 'assistant' : 'user', content }
   })
 }
@@ -77,7 +76,6 @@ export async function generateReply(ai, model, messages) {
     if (error instanceof AssistantError) {
       throw error
     }
-    // Inspect only to categorize; never return or log upstream exception text.
     if (error?.status === 429 || /quota|rate limit|daily.*(?:limit|allocation)|neurons/i.test(String(error?.message))) {
       throw new AssistantError('resource-exhausted', 'The assistant usage limit or free AI allowance has been reached. Please try again later.', 429)
     }

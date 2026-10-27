@@ -105,7 +105,6 @@ export function createHandler({ verifyToken = verifyFirebaseToken } = {}) {
       await reserveQuota(env, uid)
       return json(await generateReply(env.AI, env.AI_MODEL, messages))
     } catch (error) {
-      // Never send or log raw errors, bearer tokens, or conversation contents.
       const safe = error instanceof AssistantError ? error : new AssistantError('unavailable', 'The assistant is temporarily unavailable. Please try again later.', 503)
       if (Number.isFinite(safe.retryAfter) && safe.retryAfter > 0) {
         headers['Retry-After'] = String(Math.ceil(safe.retryAfter))

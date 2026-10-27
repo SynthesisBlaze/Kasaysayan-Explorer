@@ -7,7 +7,7 @@ import { FiguresService } from '../services/figures.service';
 import { take } from 'rxjs';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { FavoritesService } from '../services/favorites.service'; //new
+import { FavoritesService } from '../services/favorites.service';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 @Component({
@@ -36,7 +36,7 @@ export class FiguresPage implements OnInit {
   private startTopValue = 0;
   private initialSheetTop = 300;
   private minTop = 64;
-  private readonly safeOffset = 84; // keep buttons above the sheet
+  private readonly safeOffset = 84;
 
   private speechRate = 1;
   private speechPitch = 1;
@@ -66,7 +66,7 @@ export class FiguresPage implements OnInit {
   @ViewChild('figureCaption') captionRef!: ElementRef;
 
   constructor(
-    private favoritesService: FavoritesService, //new
+    private favoritesService: FavoritesService,
     private router: Router,
     private route: ActivatedRoute,
     private location: Location,
@@ -77,22 +77,19 @@ export class FiguresPage implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    // Fetch only once and wait until data is ready
     this.figuresService.getFigure(id).pipe(take(1)).subscribe({
       next: (data) => {
         this.figures = data;
-        this.details = this.toArray((data as any)?.details ?? (data as any)?.facts); // DB field is now "details" (falls back to old "facts")
+        this.details = this.toArray((data as any)?.details ?? (data as any)?.facts);
         this.refs = this.toArray((data as any)?.refs ?? (data as any)?.references);
-        this.isLoading = false; // Mark loaded
+        this.isLoading = false;
         console.log('Firebase data loaded:', data);
 
-        // reflect persisted favorite state
         const currentId = this.route.snapshot.paramMap.get('id') || this.figures.id;
         this.favoritesService.isFavorite(currentId).then((fav) => {
           this.isFav = !!fav;
         });
 
-        // set sheet position based on viewport height (no DOM measuring)
         setTimeout(() => this.setSheetTopByViewport(), 0);
       },
       error: (err) => {
@@ -104,17 +101,11 @@ export class FiguresPage implements OnInit {
 
   public setTab(tab?: string | number): void {
     this.activeTab = (tab ?? 'bio').toString();
-    setTimeout(() => {
-      this.showHandle = true;
-      this.sheetTop = this.initialSheetTop;
-    }, 0);
+    if (this.isSpeaking) this.stopSpeak();
+    const content = document.querySelector('.tab-content');
+    if (content) content.scrollTop = 0;
   }
 
-  // ✅ FAVORITE TOGGLE (Add + Remove) new
-  // Favorite toggle with HCI-minded feedback:
-  //  - optimistic update: the heart changes instantly (visibility of system status)
-  //  - success toast confirms the action
-  //  - on failure we roll the heart back and offer Retry (error recovery)
   public async toggleFavorite(): Promise<void> {
     const wasFav = this.isFav;
     this.isFav = !wasFav;
@@ -135,7 +126,7 @@ export class FiguresPage implements OnInit {
       }
     } catch (err) {
       console.error('Favorite update failed', err);
-      this.isFav = wasFav; // never leave the UI showing something that did not happen
+      this.isFav = wasFav;
       this.ui.error(
         "Couldn't update your favorites. Check your connection and try again.",
         { text: 'Retry', handler: () => this.toggleFavorite() }
@@ -143,7 +134,6 @@ export class FiguresPage implements OnInit {
     }
   }
 
-  // Add this function inside the class: new
   async showToast(message: string) {
     const toast = document.createElement('ion-toast');
     toast.message = message;
@@ -153,7 +143,6 @@ export class FiguresPage implements OnInit {
     await toast.present();
   }
 
-  // ✅ SPEECH CONTROLS
   public toggleSpeak(): void {
     if (this.isSpeaking) {
       this.stopSpeak();
@@ -175,7 +164,6 @@ export class FiguresPage implements OnInit {
 
     if (!text) return;
 
-    // Use Capacitor native TTS only
     this.isSpeaking = true;
     TextToSpeech.speak({
       text,
@@ -191,13 +179,11 @@ export class FiguresPage implements OnInit {
     });
   }
 
-
   private stopSpeak(): void {
     try { (TextToSpeech as any).stop?.(); } catch {}
     this.isSpeaking = false;
   }
 
-  // ✅ DRAG SHEET HANDLERS
   public startDrag(ev: PointerEvent): void {
     if (ev.button && ev.button !== 0) return;
     const target = ev.target as HTMLElement;
@@ -226,14 +212,22 @@ export class FiguresPage implements OnInit {
     try { document.body.style.overflow = ''; } catch { }
     try { (ev.currentTarget as any).releasePointerCapture(ev.pointerId); } catch { }
 
-    const midpoint = (this.initialSheetTop + this.minTop) / 2;
-    if (this.sheetTop <= midpoint) {
-      this.sheetTop = this.minTop;
-      this.showHandle = false;
-    } else {
-      this.sheetTop = this.initialSheetTop;
-      this.showHandle = true;
+    if (Math.abs(ev.clientY - this.startY) < 6) {
+      this.setExpanded(this.startTopValue !== this.minTop);
+      return;
     }
+
+    const midpoint = (this.initialSheetTop + this.minTop) / 2;
+    this.setExpanded(this.sheetTop <= midpoint);
+  }
+
+  public toggleSheet(): void {
+    this.setExpanded(this.sheetTop !== this.minTop);
+  }
+
+  private setExpanded(expanded: boolean): void {
+    this.sheetTop = expanded ? this.minTop : this.initialSheetTop;
+    this.showHandle = !expanded;
   }
 
   private isInteractiveElement(element: HTMLElement): boolean {
@@ -272,13 +266,13 @@ export class FiguresPage implements OnInit {
 
   private setSheetTopByViewport(): void {
     const vh = Math.max(320, Math.min(window.innerHeight || 640, 2000));
-    this.initialSheetTop = Math.round(vh * 0.55 + 12);
+    const imageRatio = vh <= 640 ? 0.48 : 0.55;
+    this.initialSheetTop = Math.round(vh * imageRatio - 16);
     if (this.sheetTop !== this.minTop) {
       this.sheetTop = this.initialSheetTop;
     }
   }
 
-  // Normalize Firebase values (array or object) to an array of strings
   private toArray(value: any): string[] {
     const pickString = (v: any): string | null => {
       if (v == null) return null;

@@ -1,25 +1,25 @@
-<app-app-bar title="Favorites"></app-app-bar>
+<app-app-bar title="Favorites" subtitle="Your saved stories and notes"></app-app-bar>
 <ion-content>
   <div class="favorites-container">
 
-
-    <!-- Search (only useful once there is something to search) -->
     <ion-searchbar *ngIf="!loading && !loadError && favorites.length > 0" class="favorites-search"
       placeholder="Search your favorites" color="light" [value]="searchTerm" [debounce]="150"
       (ionInput)="onSearch($event)"></ion-searchbar>
 
-    <div class="filter-header" (click)="toggleFilter()">
-      <span>{{ selectedCategory }}</span>
-      <ion-icon name="chevron-down-outline" [class.rotate]="showFilter"></ion-icon>
+    <div class="filter-chips" role="group" aria-label="Filter by category"
+      *ngIf="!loading && !loadError && favorites.length > 0">
+      <button type="button" *ngFor="let cat of categories" class="chip" [class.active]="cat === selectedCategory"
+        [attr.aria-pressed]="cat === selectedCategory" (click)="selectCategory(cat)">
+        <ion-icon [name]="categoryIcon(cat)" aria-hidden="true"></ion-icon>
+        <span>{{ cat }}</span>
+      </button>
     </div>
 
-    <!-- Loading state -->
     <div class="state-block" *ngIf="loading" role="status">
       <ion-spinner name="crescent"></ion-spinner>
       <p>Loading your favorites…</p>
     </div>
 
-    <!-- Error state -->
     <div class="empty-state" *ngIf="!loading && loadError">
       <ion-icon name="cloud-offline-outline"></ion-icon>
       <h3>Can't load favorites</h3>
@@ -27,7 +27,6 @@
       <ion-button fill="outline" (click)="loadFavorites()">Try again</ion-button>
     </div>
 
-    <!-- Empty state: nothing saved at all (or nothing in this category) -->
     <div class="empty-state" *ngIf="!loading && !loadError && filteredFavorites.length === 0 && !searchTerm">
       <ion-icon name="bookmarks-outline"></ion-icon>
       <h3>{{ selectedCategory === 'All' ? 'No favorites yet' : 'No ' + selectedCategory.toLowerCase() + ' saved' }}</h3>
@@ -35,7 +34,6 @@
       <ion-button fill="outline" (click)="goExplore()">Start exploring</ion-button>
     </div>
 
-    <!-- Empty state: search found nothing -->
     <div class="empty-state" *ngIf="!loading && !loadError && filteredFavorites.length === 0 && searchTerm">
       <ion-icon name="search-outline"></ion-icon>
       <h3>No matches</h3>
@@ -43,9 +41,9 @@
       <ion-button fill="outline" (click)="clearSearch()">Clear search</ion-button>
     </div>
 
-    <!-- Favorites -->
     <div class="favorites-list" *ngIf="!loading && !loadError">
-      <div *ngFor="let fav of filteredFavorites" class="favorite-item" (click)="goToDetails(fav)">
+      <div *ngFor="let fav of filteredFavorites" class="favorite-item tappable" role="button" tabindex="0"
+        [attr.aria-label]="'Open ' + fav.name" (click)="goToDetails(fav)" (keydown.enter)="goToDetails(fav)">
         <img [src]="fav.image" [alt]="fav.name" />
         <div class="details">
           <h2>{{ fav.name }}</h2>
@@ -65,28 +63,8 @@
       </div>
     </div>
 
-
-    <!-- Filter -->
-    <div class="filter-panel" *ngIf="showFilter">
-      <div *ngFor="let cat of categories" (click)="selectCategory(cat)" [class.active]="cat === selectedCategory"
-        class="filter-item">
-        <ion-icon [name]="
-            cat === 'Places'
-              ? 'location-outline'
-              : cat === 'Figures'
-              ? 'person-outline'
-              : cat === 'Events'
-              ? 'calendar-outline'
-              : cat === 'Periods'
-              ? 'business-outline'
-              : 'list-outline'
-          "></ion-icon>
-        <span>{{ cat }}</span>
-      </div>
-    </div>
   </div>
 
-  <!-- Edit note: bottom sheet with simple validation (optional, max 140 characters) -->
   <ion-modal class="note-modal" [isOpen]="noteModalOpen" (didDismiss)="closeNoteEditor()"
     [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5, 0.9]" [backdropBreakpoint]="0">
     <ng-template>

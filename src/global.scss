@@ -1,42 +1,18 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
-/* Fix for ion-router-outlet blocking touch interactions */
 ion-router-outlet.hydrated {
   pointer-events: auto;
   
@@ -45,21 +21,16 @@ ion-router-outlet.hydrated {
   }
 }
 
-/* ============================================================================
- * Single font family + touch targets (see style guide in theme/variables.scss)
- * ========================================================================== */
 html, body, ion-app,
 h1, h2, h3, h4, h5, h6, p, span, button, input, textarea, select, label {
   font-family: var(--app-font);
 }
 
-/* Every page title / heading inherits the one app font */
 ion-title, ion-label, ion-button, ion-item, ion-segment-button, ion-searchbar,
 ion-select, ion-tab-button, ion-toggle {
   font-family: var(--app-font);
 }
 
-/* Minimum 44x44 px touch targets for thumbs */
 ion-button,
 ion-back-button,
 ion-segment-button,
@@ -75,7 +46,6 @@ ion-back-button,
 button {
   min-width: var(--app-touch-min);
 }
-/* ion-button size="small" renders ~28px tall by default; keep it 44px */
 ion-button[size="small"] {
   --padding-top: 0;
   --padding-bottom: 0;
@@ -89,7 +59,18 @@ ion-toggle {
   padding: 6px 0;
 }
 
-/* Reusable round icon button (back arrows, etc.) */
+ion-button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+  --border-radius: var(--app-radius-button);
+}
+
+ion-segment-button {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .icon-btn {
   display: inline-flex;
   align-items: center;
@@ -109,9 +90,73 @@ ion-toggle {
   }
 }
 
-/* ============================================================================
- * Shared feedback UI (toasts + alerts) — see UiFeedbackService
- * ========================================================================== */
+.tappable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, filter 120ms ease;
+
+  &:active {
+    transform: scale(0.97);
+    filter: brightness(0.92);
+  }
+}
+
+.tappable:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg,
+    var(--ion-color-step-100) 0%,
+    var(--ion-color-step-150) 50%,
+    var(--ion-color-step-100) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--app-radius-card);
+}
+
+@keyframes skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--app-space-2);
+  padding: var(--app-space-8) var(--app-space-4);
+  text-align: center;
+  color: var(--ion-color-step-700);
+
+  ion-icon {
+    font-size: 56px;
+    opacity: 0.6;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--app-fs-title);
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--app-fs-body-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tappable,
+  .skeleton-block {
+    transition: none;
+    animation: none;
+  }
+}
+
 ion-toast.app-toast {
   --border-radius: var(--app-radius-card);
   --color: #ffffff;
@@ -125,8 +170,6 @@ ion-toast.app-toast {
   }
 }
 
-/* Semi-transparent so the screen underneath stays visible; colour tells the story:
-   green = added, red = removed, amber = problem, grey = info */
 ion-toast.app-toast-success { --background: rgba(22, 128, 61, 0.88); }
 ion-toast.app-toast-removed { --background: rgba(200, 30, 45, 0.88); }
 ion-toast.app-toast-error   { --background: rgba(180, 83, 9, 0.9); }

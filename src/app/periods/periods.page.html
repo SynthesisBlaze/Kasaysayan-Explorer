@@ -1,65 +1,72 @@
 <ion-content fullscreen [scrollY]="false">
-  <div class="loading-overlay" *ngIf="isLoading">
+  <div class="loading-overlay" *ngIf="isLoading" role="status">
     <ion-spinner name="crescent"></ion-spinner>
     <div class="loading-text">Loading content…</div>
   </div>
-  <div class="period" [style.background-image]="'url(' + periods?.imgPath + ')'">
-    <!-- back button placed over the image -->
+
+  <div class="period" [style.background-image]="periods?.imgPath ? 'url(' + periods.imgPath + ')' : ''">
     <button class="period-back" type="button" (click)="goBack()" aria-label="Back">
-      <ion-icon name="arrow-back"></ion-icon>
+      <ion-icon name="arrow-back" aria-hidden="true"></ion-icon>
     </button>
 
     <div #periodCaption class="period-caption">
       <div class="period-title">
         <h1>{{ periods?.name }}</h1>
-        <p>{{ periods?.date }}</p>
+        <p *ngIf="periods?.date">{{ periods?.date }}</p>
       </div>
     </div>
 
-    <!-- actions now side-by-side in the corner -->
     <div class="period-actions-corner">
-      <button class="fav" (click)="toggleFavorite()" [attr.aria-pressed]="isFav"
+      <button type="button" class="fav" (click)="toggleFavorite()" [attr.aria-pressed]="isFav"
         [attr.aria-label]="isFav ? 'Remove from favorites' : 'Add to favorites'">
-        <ion-icon [name]="isFav ? 'heart' : 'heart-outline'"></ion-icon>
+        <ion-icon [name]="isFav ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
       </button>
 
-      <button class="speak" (click)="toggleSpeak()" [attr.aria-pressed]="isSpeaking"
+      <button type="button" class="speak" (click)="toggleSpeak()" [attr.aria-pressed]="isSpeaking"
         [attr.aria-label]="isSpeaking ? 'Stop reading aloud' : 'Read aloud'">
-        <ion-icon [name]="isSpeaking ? 'volume-mute' : 'volume-high'"></ion-icon>
+        <ion-icon [name]="isSpeaking ? 'stop' : 'volume-high'" aria-hidden="true"></ion-icon>
       </button>
     </div>
   </div>
 
-  <!-- sheet: added class binding for dragging and pointer handlers on the handle -->
-  <!-- sheet: added class binding for dragging and pointer handlers on the entire sheet -->
-  <div class="sheet" [class.dragging]="isDragging" [style.top.px]="sheetTop" (pointerdown)="startDrag($event)"
-    (pointermove)="onDrag($event)" (pointerup)="endDrag($event)" (pointercancel)="endDrag($event)"
-    (pointerleave)="endDrag($event)">
+  <div class="sheet" [class.dragging]="isDragging" [style.top.px]="sheetTop">
 
-    <!-- Keep the handle for visual indication only, but it's not the only draggable area -->
-    <div class="handle-wrap" [class.hidden]="!showHandle">
-      <div class="handle"></div>
-      <div class="handle-label"></div>
+    <div class="sheet-header" (pointerdown)="startDrag($event)" (pointermove)="onDrag($event)"
+      (pointerup)="endDrag($event)" (pointercancel)="endDrag($event)">
+      <div class="handle-wrap" role="button" tabindex="0" [attr.aria-expanded]="!showHandle"
+        [attr.aria-label]="showHandle ? 'Expand to read more' : 'Collapse'"
+        (keydown.enter)="toggleSheet()" (keydown.space)="$event.preventDefault(); toggleSheet()">
+        <span class="handle"></span>
+        <span class="handle-label">{{ showHandle ? 'Swipe up to read more' : 'Swipe down to see image' }}</span>
+      </div>
+
+      <ion-segment [value]="activeTab" (ionChange)="setTab($event.detail.value)">
+        <ion-segment-button value="bio">Description</ion-segment-button>
+        <ion-segment-button value="details">Details</ion-segment-button>
+        <ion-segment-button value="refs">References</ion-segment-button>
+      </ion-segment>
     </div>
-
-    <ion-segment [value]="activeTab" (ionChange)="setTab($event.detail.value)">
-      <ion-segment-button value="bio">Description</ion-segment-button>
-      <ion-segment-button value="details">Details</ion-segment-button>
-      <ion-segment-button value="refs">References</ion-segment-button>
-    </ion-segment>
 
     <div class="tab-content">
       <div *ngIf="activeTab === 'bio'">
-        <p class="text">{{periods?.description}}</p>
+        <p class="text" *ngIf="periods?.description; else noContent">{{ periods?.description }}</p>
       </div>
 
       <div *ngIf="activeTab === 'details'">
-        <p class="text"><ng-container *ngFor="let f of details">• {{ f }} <br /></ng-container></p>
+        <ul class="bullet-list" *ngIf="details.length; else noContent">
+          <li *ngFor="let f of details">{{ f }}</li>
+        </ul>
       </div>
 
       <div *ngIf="activeTab === 'refs'">
-        <p class="text"><ng-container *ngFor="let r of refs">• {{ r }} <br /></ng-container></p>
+        <ul class="bullet-list" *ngIf="refs.length; else noContent">
+          <li *ngFor="let r of refs">{{ r }}</li>
+        </ul>
       </div>
+
+      <ng-template #noContent>
+        <p class="tab-empty" *ngIf="!isLoading">Nothing here yet.</p>
+      </ng-template>
     </div>
   </div>
 </ion-content>

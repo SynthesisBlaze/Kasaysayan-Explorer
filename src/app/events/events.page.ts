@@ -32,28 +32,22 @@ export class EventsPage implements OnInit {
   public showHandle = true;
 
   public isLoading = true;
-  // favorite / speech state
   public isFav = false;
   public isSpeaking = false;
 
-  // dragging state
   public isDragging = false;
   private startY = 0;
   private startTopValue = 0;
 
-  // peek/positions
   private initialSheetTop = 300;
   private minTop = 64;
-  private readonly safeOffset = 84; // keep buttons above the sheet
+  private readonly safeOffset = 84;
 
   private speechRate = 1;
   private speechPitch = 1;
   private speechVolume = 1;
   private preferredVoiceType: 'female' | 'male' | 'filipino' | 'default' = 'female';
 
-  // Voice management removed; using Capacitor TextToSpeech only
-
-  // Expressive reading styles (mirrors your other page)
   private readingStyles: any = {
     dramatic: { rate: 0.85, pitch: 2.1, volume: 1.0, description: 'Expressive and theatrical reading' },
     storytelling: { rate: 0.88, pitch: 1.8, volume: 1.0, description: 'Warm and engaging narrative style' },
@@ -66,8 +60,6 @@ export class EventsPage implements OnInit {
 
   public currentReadingStyle: string = 'conversational';
   public readingStyleDescription: string = 'Natural and friendly tone';
-
-  // Web Speech API removed; using Capacitor TextToSpeech exclusively
 
   @ViewChild('event') eventRef!: ElementRef;
   @ViewChild('eventsCaption') captionRef!: ElementRef;
@@ -84,22 +76,19 @@ export class EventsPage implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    // Fetch only once and wait until data is ready
     this.eventsService.getEvent(id).pipe(take(1)).subscribe({
       next: (data) => {
         this.events = data;
-        this.details = this.toArray((data as any)?.details ?? (data as any)?.facts); // DB field is now "details" (falls back to old "facts")
+        this.details = this.toArray((data as any)?.details ?? (data as any)?.facts);
         this.refs = this.toArray((data as any)?.refs ?? (data as any)?.references);
-        this.isLoading = false; // Mark loaded
+        this.isLoading = false;
         console.log('Firebase data loaded:', data);
 
-        // reflect persisted favorite state
         const currentId = this.route.snapshot.paramMap.get('id') || this.events.id;
         this.favoritesService.isFavorite(currentId).then((fav) => {
           this.isFav = !!fav;
         });
 
-        // set sheet position based on viewport height (no DOM measuring)
         setTimeout(() => this.setSheetTopByViewport(), 0);
       },
       error: (err) => {
@@ -111,17 +100,11 @@ export class EventsPage implements OnInit {
 
   public setTab(tab?: string | number): void {
     this.activeTab = (tab ?? 'description').toString();
-    setTimeout(() => {
-      this.showHandle = true;
-      this.sheetTop = this.initialSheetTop;
-    }, 0);
+    if (this.isSpeaking) this.stopSpeak();
+    const content = document.querySelector('.tab-content');
+    if (content) content.scrollTop = 0;
   }
 
-  // favorite toggle
-  // Favorite toggle with HCI-minded feedback:
-  //  - optimistic update: the heart changes instantly (visibility of system status)
-  //  - success toast confirms the action
-  //  - on failure we roll the heart back and offer Retry (error recovery)
   public async toggleFavorite(): Promise<void> {
     const wasFav = this.isFav;
     this.isFav = !wasFav;
@@ -142,7 +125,7 @@ export class EventsPage implements OnInit {
       }
     } catch (err) {
       console.error('Favorite update failed', err);
-      this.isFav = wasFav; // never leave the UI showing something that did not happen
+      this.isFav = wasFav;
       this.ui.error(
         "Couldn't update your favorites. Check your connection and try again.",
         { text: 'Retry', handler: () => this.toggleFavorite() }
@@ -158,7 +141,6 @@ export class EventsPage implements OnInit {
     document.body.appendChild(toast);
     await toast.present();
   }
-  // speech toggle
   public toggleSpeak(): void {
     if (this.isSpeaking) {
       this.stopSpeak();
@@ -195,7 +177,6 @@ export class EventsPage implements OnInit {
   }
 
   private setVoiceByPreference(): void {
-    // No-op: using Capacitor TextToSpeech only
   }
 
   private stopSpeak(): void {
@@ -203,7 +184,6 @@ export class EventsPage implements OnInit {
     this.isSpeaking = false;
   }
 
-  // --- Drag handlers (entire sheet drag) ---
   public startDrag(ev: PointerEvent): void {
     if (ev.button && ev.button !== 0) return;
 
@@ -236,14 +216,22 @@ export class EventsPage implements OnInit {
     try { document.body.style.overflow = ''; } catch { }
     try { (ev.currentTarget as any).releasePointerCapture(ev.pointerId); } catch { }
 
-    const midpoint = (this.initialSheetTop + this.minTop) / 2;
-    if (this.sheetTop <= midpoint) {
-      this.sheetTop = this.minTop;
-      this.showHandle = false;
-    } else {
-      this.sheetTop = this.initialSheetTop;
-      this.showHandle = true;
+    if (Math.abs(ev.clientY - this.startY) < 6) {
+      this.setExpanded(this.startTopValue !== this.minTop);
+      return;
     }
+
+    const midpoint = (this.initialSheetTop + this.minTop) / 2;
+    this.setExpanded(this.sheetTop <= midpoint);
+  }
+
+  public toggleSheet(): void {
+    this.setExpanded(this.sheetTop !== this.minTop);
+  }
+
+  private setExpanded(expanded: boolean): void {
+    this.sheetTop = expanded ? this.minTop : this.initialSheetTop;
+    this.showHandle = !expanded;
   }
 
   private isInteractiveElement(element: HTMLElement): boolean {
@@ -282,13 +270,13 @@ export class EventsPage implements OnInit {
 
   private setSheetTopByViewport(): void {
     const vh = Math.max(320, Math.min(window.innerHeight || 640, 2000));
-    this.initialSheetTop = Math.round(vh * 0.55 + 12);
+    const imageRatio = vh <= 640 ? 0.48 : 0.55;
+    this.initialSheetTop = Math.round(vh * imageRatio - 16);
     if (this.sheetTop !== this.minTop) {
       this.sheetTop = this.initialSheetTop;
     }
   }
 
-  // Normalize Firebase values (array or object) to a string array
   private toArray(value: any): string[] {
     if (Array.isArray(value)) {
       return value.filter(v => v != null && v !== '');

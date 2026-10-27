@@ -20,7 +20,23 @@ export class SearchPage implements OnInit, OnDestroy {
   allData: any[] = [];
   filteredResults: any[] = [];
   searchTerm: string = '';
+  loading = true;
+  private loadedCategories = new Set<string>();
   private subscriptions: Subscription[] = [];
+
+  readonly categories = [
+    { label: 'Places', route: '/historical-places', image: 'assets/images/Places.jpg', icon: 'location-outline' },
+    { label: 'Figures', route: '/historical-figures', image: 'assets/images/Figures.jpg', icon: 'person-outline' },
+    { label: 'Events', route: '/historical-events', image: 'assets/images/Events.jpg', icon: 'calendar-outline' },
+    { label: 'Periods', route: '/historical-periods', image: 'assets/images/Government.jpg', icon: 'time-outline' },
+  ];
+
+  private readonly categoryIcons: Record<string, string> = {
+    figure: 'person-outline',
+    place: 'location-outline',
+    event: 'calendar-outline',
+    period: 'time-outline',
+  };
 
   constructor(
     private figuresService: FiguresService,
@@ -35,12 +51,10 @@ export class SearchPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Clean up subscriptions to prevent duplication
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   loadAllData() {
-    // Clear existing data before reloading (avoids duplicates)
     this.allData = [];
 
     const services = [
@@ -57,11 +71,17 @@ export class SearchPage implements OnInit, OnDestroy {
           category,
         }));
 
-        // ✅ Merge cleanly, avoid duplicating existing entries
         this.allData = [
           ...this.allData.filter((d) => d.category !== category),
           ...formatted
         ];
+
+        this.loadedCategories.add(category);
+        this.loading = this.loadedCategories.size < services.length;
+        this.applyFilter();
+      }, () => {
+        this.loadedCategories.add(category);
+        this.loading = this.loadedCategories.size < services.length;
       });
 
       this.subscriptions.push(sub);
@@ -69,17 +89,33 @@ export class SearchPage implements OnInit, OnDestroy {
   }
 
   onSearch(event: any) {
-    const term = event.detail.value.toLowerCase();
-    this.searchTerm = term;
+    this.searchTerm = (event.detail.value || '').trim();
+    this.applyFilter();
+  }
 
+  clearSearch() {
+    this.searchTerm = '';
+    this.filteredResults = [];
+  }
+
+  categoryIcon(category: string): string {
+    return this.categoryIcons[category] || 'document-outline';
+  }
+
+  private applyFilter() {
+    const term = this.searchTerm.toLowerCase();
     if (!term) {
       this.filteredResults = [];
       return;
     }
 
-    this.filteredResults = this.allData.filter((item) =>
-      item.name.toLowerCase().includes(term)
-    );
+    this.filteredResults = this.allData
+      .filter((item) => (item.name || '').toLowerCase().includes(term))
+      .sort((a, b) => {
+        const aStarts = a.name.toLowerCase().startsWith(term) ? 0 : 1;
+        const bStarts = b.name.toLowerCase().startsWith(term) ? 0 : 1;
+        return aStarts - bStarts || a.name.localeCompare(b.name);
+      });
   }
 
   openDetail(item: any) {

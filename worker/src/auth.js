@@ -33,7 +33,6 @@ export async function verifyFirebaseToken(token, projectId, keys = firebaseKeys)
     if (/^ERR_(JWT|JWS|JOSE)_/.test(String(error?.code)) || error?.code === 'ERR_JWKS_NO_MATCHING_KEY') {
       throw new AssistantError('unauthenticated', 'Your session is invalid or expired. Please sign in again.', 401)
     }
-    // Network/key-server failures must fail closed, not bypass signature verification.
     throw new AssistantError('unavailable', 'Account verification is temporarily unavailable. Please try again later.', 503)
   }
 }

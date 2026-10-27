@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { PlacesService } from '../../services/places.service';
-
 
 @Component({
   selector: 'app-historical-places',
@@ -11,10 +11,13 @@ import { PlacesService } from '../../services/places.service';
   styleUrls: ['./historical-places.page.scss'],
   imports: [IonicModule, CommonModule, FormsModule],
 })
-
-export class HistoricalPlacesPage implements OnInit {
+export class HistoricalPlacesPage implements OnInit, OnDestroy {
   places: any[] = [];
   loading = true;
+  loadError = false;
+  searchTerm = '';
+  readonly skeletons = [1, 2, 3, 4, 5, 6];
+  private sub?: Subscription;
 
   constructor(
     private navCtrl: NavController,
@@ -25,21 +28,38 @@ export class HistoricalPlacesPage implements OnInit {
     this.loadPlaces();
   }
 
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  get filteredPlaces(): any[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.places
+      .filter((item) => !term || (item.name || '').toLowerCase().includes(term))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }
+
   loadPlaces() {
-    // Delay Firebase calls to ensure they run within proper injection context
+    this.loading = true;
+    this.loadError = false;
+    this.sub?.unsubscribe();
     setTimeout(() => {
-      this.placesService.getPlaces().subscribe({
+      this.sub = this.placesService.getPlaces().subscribe({
         next: (data) => {
           this.places = data;
           this.loading = false;
-          console.log('Places loaded:', this.places);
         },
         error: (err) => {
           console.error('Error loading places:', err);
           this.loading = false;
+          this.loadError = true;
         }
       });
     }, 0);
+  }
+
+  onSearch(event: any) {
+    this.searchTerm = event.detail.value || '';
   }
 
   goBack() {

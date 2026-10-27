@@ -65,7 +65,6 @@ export class AssistantPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Ignore late replies after navigating away; no chat is persisted locally.
     this.revision++
   }
 
@@ -119,7 +118,6 @@ export class AssistantPage implements OnInit, OnDestroy {
   }
 
   private scrollToLatest(): void {
-    // Render first so fast replies cannot scroll using the previous transcript height.
     this.changeDetector.detectChanges()
     const revision = this.revision
     requestAnimationFrame(() => {

@@ -6,7 +6,6 @@ import { register } from 'swiper/element/bundle';
 import { AppBarComponent } from '../shared/app-bar/app-bar.component';
 import { Router, RouterLink } from '@angular/router';
 
-// Register Swiper web components
 register();
 
 @Component({
@@ -21,6 +20,13 @@ export class DiscoverPage implements OnInit {
   swiperModules = [IonicSlides];
   currentPeriodIndex = 0;
   private isNavigating = false;
+
+  quickLinks = [
+    { label: 'Periods', icon: 'time', route: '/historical-periods' },
+    { label: 'Events', icon: 'calendar', route: '/historical-events' },
+    { label: 'Figures', icon: 'person', route: '/historical-figures' },
+    { label: 'Places', icon: 'location', route: '/historical-places' },
+  ];
 
   historicalPeriods = [
     {
@@ -44,7 +50,7 @@ export class DiscoverPage implements OnInit {
     {
       id: 'japanesecolonial',
       title: 'Japanese Occupation',
-      subtitle: '1842-1945',
+      subtitle: '1942-1945',
       image: 'assets/images/japaneseoccupation.jpg'
     },
     {
@@ -65,7 +71,7 @@ export class DiscoverPage implements OnInit {
     {
       id: 'executionofrizal',
       title: 'Execution of Rizal',
-      year: '1872',
+      year: '1896',
       image: 'assets/images/executionofrizal.jpg'
     },
     {
@@ -115,7 +121,6 @@ export class DiscoverPage implements OnInit {
     }
   ];
 
-
   constructor(
     private router: Router,
     private ngZone: NgZone
@@ -138,12 +143,10 @@ export class DiscoverPage implements OnInit {
       event.stopPropagation();
     }
     
-    // Clear navigation flag after timeout as safety measure
     const timeoutId = setTimeout(() => {
       this.isNavigating = false;
     }, 2000);
     
-    // Run navigation inside Angular zone to ensure Firebase calls work properly
     this.ngZone.run(() => {
       this.router.navigate(route).then(() => {
         clearTimeout(timeoutId);

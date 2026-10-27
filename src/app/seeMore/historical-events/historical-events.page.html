@@ -1,27 +1,50 @@
-<ion-content class="ion-padding page-bg">
+<ion-content class="page-bg">
+  <div class="list-page">
 
-  <!-- Custom Header -->
-  <div class="custom-header">
-    <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
-      <ion-icon name="arrow-back-outline"></ion-icon>
-    </button>
-    <h1 class="page-title">Historical Events</h1>
+    <div class="custom-header">
+      <button type="button" class="icon-btn back-btn" aria-label="Go back" (click)="goBack()">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="header-text">
+        <h1 class="page-title">Historical Events</h1>
+        <p class="page-count" *ngIf="!loading && !loadError">{{ events.length }} events</p>
+      </div>
+    </div>
+
+    <ion-searchbar class="list-search" placeholder="Search events" color="light" [debounce]="150"
+      [value]="searchTerm" (ionInput)="onSearch($event)" *ngIf="!loadError"></ion-searchbar>
+
+    <div class="card-grid" *ngIf="loading" role="status" aria-label="Loading events">
+      <div class="skeleton-block card-skeleton" *ngFor="let s of skeletons"></div>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && loadError">
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h3>Couldn't load events</h3>
+      <p>Check your internet connection and try again.</p>
+      <ion-button fill="outline" (click)="loadEvents()">Try again</ion-button>
+    </div>
+
+    <div class="state-message" *ngIf="!loading && !loadError && filteredEvents.length === 0">
+      <ion-icon [name]="searchTerm ? 'search-outline' : 'calendar-outline'" aria-hidden="true"></ion-icon>
+      <h3>{{ searchTerm ? 'No matches' : 'Nothing here yet' }}</h3>
+      <p *ngIf="searchTerm">No events match "{{ searchTerm }}".</p>
+    </div>
+
+    <div class="card-grid" *ngIf="!loading && !loadError">
+      <div
+        class="item-card tappable"
+        role="button"
+        tabindex="0"
+        *ngFor="let event of filteredEvents"
+        [attr.aria-label]="event.name"
+        (click)="openEvent(event.id)"
+        (keydown.enter)="openEvent(event.id)"
+        [style.background-image]="'url(' + event.imgPath + ')'"
+      >
+        <div class="item-title">{{ event.name }}</div>
+      </div>
+    </div>
+
   </div>
-
-  <!-- Loading Spinner -->
-  <ion-spinner *ngIf="loading" name="crescent" color="light"></ion-spinner>
-
-  <!-- Events Grid -->
-  <div class="events-grid" *ngIf="!loading">
-    <ion-card
-      class="event-card"
-      *ngFor="let event of events"
-      (click)="openEvent(event.id)"
-      [style.background-image]="'url(' + event.imgPath + ')'"
-    >
-      <div class="overlay"></div>
-      <div class="event-title">{{ event.name }}</div>
-    </ion-card>
-  </div>
-
 </ion-content>

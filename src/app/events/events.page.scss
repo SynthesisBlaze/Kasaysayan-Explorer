@@ -1,21 +1,14 @@
-
 :host {
   --ion-background-color: var(--ion-item-background);
 }
 
-@media (max-height: 640px) {
-  .sheet { top: calc(55vh + 6px); }
-}
-
-/* disable outer ion-content scrolling so page stays fixed */
 :host ion-content .inner-scroll {
   overflow: hidden !important;
 }
 :host ion-content {
-  overflow: hidden; /* ensure outer content doesn't scroll — sheet will move instead */
+  overflow: hidden;
 }
 
-/* full-screen loading overlay */
 .loading-overlay {
   position: absolute;
   inset: 0;
@@ -23,285 +16,267 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--ion-background-color) 70%, transparent);
+  background: var(--ion-background-color);
   z-index: 100;
 }
 .loading-text {
-  margin-top: 12px;
+  margin-top: var(--app-space-3);
   color: var(--ion-text-color);
-  font-size: 14px;
+  font-size: var(--app-fs-body-sm);
   opacity: 0.9;
 }
 
-/* figure */
 .figure {
   position: relative;
   width: 100%;
-  background-image: url('/assets/images/joserizal.jpg');
+  background-color: var(--ion-color-step-150);
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: flex-end;
   color: #fff;
-  padding: 20px 20px 0; /* remove bottom padding so caption can flush to image bottom */
-  box-shadow: inset 0 -40px 60px rgba(0,0,0,0.45);
   z-index: 1;
   height: 55vh;
 }
 
-/* make the caption stretch fully to the bottom edge of the figure (pasagad),
-   put the shade only behind the text area but full-width so it reaches the image bottom */
 .figure-caption {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 20; /* above sheet (10) but below action buttons */
+  z-index: 2;
   color: #fff;
   box-sizing: border-box;
-
-  /* full-width dark shade that hugs the bottom of the image */
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.92) 0%,
-    rgba(0,0,0,0.75) 20%,
-    rgba(0,0,0,0.45) 45%,
-    rgba(0,0,0,0.45) 100%
-  );
-
-  padding: 12px 16px 18px; /* vertical spacing for name + year */
-  border-radius: 0; /* flush corners so shade touches edges */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
+  padding: var(--app-space-8) 120px var(--app-space-6) var(--app-space-4);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* keep title styling but remove individual background so the full caption shade is visible */
-.figure-title { flex: 1; }
 .figure-title h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--app-fs-heading);
+  line-height: 1.2;
   color: #ffffff;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.65);
-  -webkit-text-stroke: 0.2px rgba(0,0,0,0.5);
 }
 .figure-title p {
-  margin: 4px 0 10px;
-  opacity: 0.95;
-  font-size: 14px;
+  margin: var(--app-space-1) 0 0;
+  font-size: var(--app-fs-body-sm);
   color: #f3f7f3;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+  opacity: 0.95;
 }
 
-/* corner actions: side-by-side (row) */
-.figure-actions-corner {
-  position: absolute;
-  bottom: 12px;            /* restore bottom placement */
-  right: 12px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  z-index: 50;
-}
-
-/* button styles - scoped to the corner so they stay side-by-side */
+.figure-back,
 .figure-actions-corner .fav,
 .figure-actions-corner .speak {
-  width: 44px;
-  height: 44px;
+  width: var(--app-touch-min);
+  height: var(--app-touch-min);
   border-radius: 50%;
   background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--ion-color-primary-contrast);
   border: none;
   padding: 0;
   box-sizing: border-box;
-}
-.figure-actions-corner .speak {
-  background: var(--ion-color-primary);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+
+  &:active { transform: scale(0.92); }
+
+  ion-icon {
+    font-size: 22px;
+    color: var(--ion-color-primary-contrast);
+    display: block;
+  }
 }
 
-/* ensure icons are same size and centered */
-.fav ion-icon, .speak ion-icon {
-  font-size: 20px;
-  line-height: 1;
-  display: block;
+.figure-back {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + var(--app-space-3));
+  left: var(--app-space-3);
+  z-index: 30;
 }
 
- /* sheet adjustments: positioned absolutely so it can overlap the figure when expanded.
-    Left/right set to 0 so corners are flush; make sheet a column so tab-content can flex. */
+.figure-actions-corner {
+  position: absolute;
+  bottom: var(--app-space-6);
+  right: var(--app-space-4);
+  display: flex;
+  gap: var(--app-space-3);
+  align-items: center;
+  z-index: 3;
+}
+
+.figure-actions-corner .fav[aria-pressed="true"] ion-icon {
+  color: #e5484d;
+}
+
+.figure-actions-corner .speak[aria-pressed="true"] {
+  animation: speak-pulse 1.4s ease-in-out infinite;
+}
+@keyframes speak-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--ion-color-primary-rgb), 0.6); }
+  50%      { box-shadow: 0 0 0 8px rgba(var(--ion-color-primary-rgb), 0); }
+}
+
 .sheet {
   position: absolute;
-  left: 0;                /* flush to left edge */
-  right: 0;               /* flush to right edge */
-  bottom: 0;              /* anchor bottom to viewport */
-  margin: 0;
-  /* Start just below the image (image is 55vh tall) */
-  top: calc(55vh + 12px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: calc(55vh - 16px);
   display: flex;
   flex-direction: column;
   background: var(--ion-item-background);
   color: var(--ion-text-color);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  padding: 14px;         /* inner padding only, sheet itself touches edges */
-  box-shadow: 0 18px 36px rgba(0,0,0,0.45);
-  transition: top 180ms cubic-bezier(.2,.8,.2,1);
-  overflow: hidden;      /* content scrolls inside .tab-content */
-  text-align: justify;
-  
-  /* Prevent text selection during drag */
-  user-select: none;
-  -webkit-user-select: none;
-  
-  /* Ensure smooth dragging */
-  touch-action: none;
-  z-index: 25 !important;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+  transition: top 220ms cubic-bezier(.2, .8, .2, 1);
+  overflow: hidden;
+  z-index: 25;
 }
 
-/* disable transition while actively dragging for snappy interaction */
 .sheet.dragging {
   transition: none !important;
 }
 
-/* handle / hint unchanged but keep it accessible for dragging */
-.handle-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  transition: opacity 120ms;
-  touch-action: none; /* important so pointer events work smoothly on touch devices */
-}
-.handle-wrap.hidden { opacity: 0; height: 0; overflow: hidden; pointer-events: none; }
-
-.handle {
-  width: 36px;
-  height: 6px;
-  background: var(--ion-color-step-300);
-  border-radius: 4px;
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-.handle-label {
-  font-size: 12px;
-  color: var(--ion-text-color);
-  opacity: 0.95;
-}
-
-/* segment/tab styling */
-/* make the ion-segment look like distinct tabs (pill container + per-tab styling) */
-ion-segment {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  background: var(--ion-color-step-100);
-  padding: 6px;
-  border-radius: 12px;
-  --indicator-color: transparent; /* we'll use button background to indicate active tab */
-  margin-bottom: 12px;
-}
-
-/* base tab button look */
-ion-segment-button {
-  --background: transparent;
-  background: transparent;
-  color: var(--ion-text-color);
-  min-height: 44px;
-  padding: var(--app-space-2) var(--app-space-3);
-  border-radius: var(--app-radius-sm);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
-  box-shadow: none;
-}
-
-/* hovered/pressed state for affordance */
-ion-segment-button:hover {
-  background: var(--ion-color-step-150);
-}
-
-/* active tab — visible colored background and accent text color */
-ion-segment-button[aria-pressed="true"],
-ion-segment-button[aria-checked="true"] {
-  background: var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(35,56,47,0.12);
-}
-
-/* make the active tab indicator slightly bolder if Ionic still shows one */
-ion-segment::part(indicator) {
-  background: transparent;
-}
-
-/* responsive tweak: keep tabs compact on small screens */
-@media (max-width: 420px) {
-  ion-segment { gap: 4px; padding: 4px; }
-  ion-segment-button { min-height: 44px; padding: var(--app-space-2); font-size: var(--app-fs-caption); }
-}
-
-/* ensure tab text inside sheet has clear padding from edges */
-.sheet ion-segment {
-  margin-left: 4px;
-  margin-right: 4px;
-}
-
-/* tab-content: no scrolling at all */
-.tab-content {
-  flex: 1;
-  overflow: hidden; /* Changed from 'auto' to 'hidden' */
-  padding-right: 12px;
-  padding-bottom: 12px;
-  
-  /* Allow text selection in content areas when not dragging */
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-/* But prevent selection during drag */
-.sheet.dragging .tab-content {
+.sheet-header {
+  flex: 0 0 auto;
+  padding: 0 var(--app-space-4) var(--app-space-2);
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* reduce horizontal inner padding so content looks aligned */
-.text {
-  color: var(--ion-text-color);
-  line-height: 1.9;
-  margin: 10px 0;
-  font-size: 17px;
-  font-weight: 400;
-}
-
-/* favorite button and caption */
-.figure-caption { z-index: 2; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-.figure-caption h1 { margin: 0; font-size: 24px; } /* mas malaking title */
-.figure-caption p { margin: 4px 0 10px; opacity: 0.95; font-size: 14px; }
-
-/* back arrow over figure image (upper-left) */
-.figure-back {
-  position: absolute;
-  top: 35px;              /* adjust to align with image corner */
-  left: 12px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--ion-color-primary);
-  display: inline-flex;
+.handle-wrap {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--ion-color-primary-contrast);
-  border: none;
-  padding: 0;
-  z-index: 30;            /* above figure and sheet */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  gap: 2px;
+  height: var(--app-touch-min);
+  cursor: grab;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible .handle {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 4px;
+  }
 }
 
-/* ensure ion-icon inside the button is white and sized nicely */
-.figure-back ion-icon {
-  font-size: 20px;
+.handle {
+  width: 40px;
+  height: 5px;
+  background: var(--ion-color-step-300);
+  border-radius: 4px;
+}
+
+.handle-label {
+  font-size: 11px;
+  color: var(--ion-color-step-700);
+  letter-spacing: 0.4px;
+}
+
+ion-segment {
+  width: 100%;
+  background: var(--ion-color-step-100);
+  padding: 4px;
+  border-radius: var(--app-radius-card);
+  --indicator-color: transparent;
+}
+
+ion-segment-button {
+  --background: transparent;
+  --color: var(--ion-text-color);
+  --color-checked: var(--ion-color-primary-contrast);
+  --background-checked: var(--ion-color-primary);
+  --indicator-color: transparent;
+  --border-radius: var(--app-radius-sm);
+  min-height: 40px;
+  min-width: 0;
+  margin: 0;
+  border-radius: var(--app-radius-sm);
+  font-weight: 700;
+  font-size: var(--app-fs-body-sm);
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+ion-segment-button.segment-button-checked {
+  background: var(--ion-color-primary);
   color: var(--ion-color-primary-contrast);
-  display: block;
+}
+
+ion-segment::part(indicator) {
+  background: transparent;
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: var(--app-space-2) var(--app-space-4) calc(var(--app-space-8) + env(safe-area-inset-bottom, 0px));
+}
+
+.text {
+  color: var(--ion-text-color);
+  line-height: 1.75;
+  margin: 0;
+  font-size: 17px;
+  white-space: pre-line;
+}
+
+.bullet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-3);
+
+  li {
+    position: relative;
+    padding: var(--app-space-3) var(--app-space-3) var(--app-space-3) var(--app-space-8);
+    background: var(--ion-color-step-50);
+    border-radius: var(--app-radius-sm);
+    line-height: 1.6;
+    font-size: var(--app-fs-body);
+    overflow-wrap: anywhere;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: var(--app-space-3);
+      top: calc(var(--app-space-3) + 0.55em);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ion-color-primary);
+    }
+  }
+}
+
+.tab-empty {
+  margin: var(--app-space-6) 0;
+  text-align: center;
+  color: var(--ion-color-step-700);
+  font-size: var(--app-fs-body-sm);
+}
+
+@media (max-height: 640px) {
+  .figure { height: 48vh; }
+  .sheet { top: calc(48vh - 16px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet { transition: none; }
+  .figure-actions-corner .speak[aria-pressed="true"] { animation: none; }
 }

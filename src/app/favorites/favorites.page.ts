@@ -24,17 +24,14 @@ export class FavoritesPage implements OnInit, OnDestroy {
 
   favorites: any[] = [];
 
-  /** Search box text (same case-insensitive 'contains' logic as the Search tab) */
   searchTerm = '';
 
-  /** Note editor (edit feature) */
   readonly noteMaxLength = 140;
   noteModalOpen = false;
   noteTarget: any = null;
   noteDraft = '';
   savingNote = false;
 
-  /** Screen states (HCI: visibility of system status) */
   loading = true;
   loadError = false;
 
@@ -56,7 +53,6 @@ export class FavoritesPage implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
   }
 
-  /** Realtime subscription to favorites, with loading + error states. */
   loadFavorites() {
     this.sub?.unsubscribe();
     this.loading = true;
@@ -88,7 +84,16 @@ export class FavoritesPage implements OnInit, OnDestroy {
     this.showFilter = false;
   }
 
-  /** Category filter + search, applied together. */
+  categoryIcon(category: string): string {
+    const icons: Record<string, string> = {
+      Places: 'location-outline',
+      Figures: 'person-outline',
+      Events: 'calendar-outline',
+      Periods: 'time-outline',
+    };
+    return icons[category] || 'apps-outline';
+  }
+
   get filteredFavorites() {
     const term = this.searchTerm.trim().toLowerCase();
     return this.favorites.filter(fav => {
@@ -116,14 +121,12 @@ export class FavoritesPage implements OnInit, OnDestroy {
   }
 
   async goToDetails(fav: any) {
-    // Adjust navigation per category later
     const route = fav.category.toLowerCase();
     this.router.navigate([`/${route}`, fav.id]);
   }
 
-  /** Delete flow: confirm -> remove -> toast with Undo (or Retry on failure). */
   async confirmRemove(fav: any, event: Event) {
-    event.stopPropagation(); // don't also open the details page
+    event.stopPropagation();
 
     const ok = await this.ui.confirm({
       header: 'Remove favorite?',
@@ -159,7 +162,7 @@ export class FavoritesPage implements OnInit, OnDestroy {
         name: fav.name,
         image: fav.image,
         category: fav.category,
-        note: fav.note // keep the personal note when undoing a delete
+        note: fav.note
       });
       this.ui.success('Favorite restored');
     } catch (err) {
@@ -168,11 +171,8 @@ export class FavoritesPage implements OnInit, OnDestroy {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Edit: personal note
-  // ---------------------------------------------------------------------------
   openNoteEditor(fav: any, event: Event) {
-    event.stopPropagation(); // don't also open the details page
+    event.stopPropagation();
     this.noteTarget = fav;
     this.noteDraft = fav.note ?? '';
     this.noteModalOpen = true;
@@ -184,7 +184,6 @@ export class FavoritesPage implements OnInit, OnDestroy {
     this.noteDraft = '';
   }
 
-  /** Validation: optional, trimmed, at most 140 characters. */
   get noteTooLong(): boolean {
     return this.noteDraft.length > this.noteMaxLength;
   }

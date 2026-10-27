@@ -1,4 +1,3 @@
-// Fix router outlet blocking interactions
 ion-router-outlet {
   pointer-events: none;
   
@@ -7,22 +6,17 @@ ion-router-outlet {
   }
 }
 
-// Tab bar
 ion-tab-bar {
   --background: var(--ion-background-color);
-  /* let the bar grow with its content (icon + label) instead of a fixed height,
-     and respect the phone's bottom safe area so labels never get clipped */
   --height: auto;
   height: auto;
   min-height: 56px;
   contain: none;
   padding: var(--app-space-1) var(--app-space-2);
-  padding-bottom: calc(var(--app-space-1) + env(safe-area-inset-bottom, 0px)); /* small gap + phone safe area */
+  padding-bottom: calc(var(--app-space-1) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--ion-color-step-150);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 
-  /* Keep the bar on top of the page and flush with the bottom edge: nothing from the
-     page may show through or underneath it. */
   position: relative;
   z-index: 10;
 
@@ -38,8 +32,8 @@ ion-tab-bar {
   }
 
   ion-tab-button {
-    --color: var(--ion-color-step-700); /* inactive color */
-    --color-selected: var(--ion-text-color); /* active color */
+    --color: var(--ion-color-step-700);
+    --color-selected: var(--ion-text-color);
     --ripple-color: var(--ion-text-color);
     min-height: 48px;
     height: auto;
@@ -49,7 +43,7 @@ ion-tab-bar {
     transition: all 0.2s ease;
 
     .tab-icon {
-      width: 32px;
+      width: 56px;
       height: 32px;
       border-radius: 16px;
       display: grid;
@@ -78,7 +72,7 @@ ion-tab-bar {
     --color: var(--ion-text-color);
     
     .tab-icon {
-      background: var(--ion-step-700);
+      background: rgba(var(--ion-text-color-rgb), 0.14);
     }
 
     ion-icon {
@@ -100,7 +94,7 @@ ion-tab-bar {
 
     ion-tab-button {
       .tab-icon {
-        width: 28px;
+        width: 44px;
         height: 28px;
       }
 

@@ -1,9 +1,7 @@
-<app-app-bar title="Quiz"></app-app-bar>
+<app-app-bar title="Quiz" subtitle="Pick a topic and test what you know"></app-app-bar>
 
 <ion-content [fullscreen]="true">
   <div class="container">
-
-    <p class="intro">Pick a topic and test what you know.</p>
 
     <section class="group" *ngFor="let group of groups">
       <div class="group-head">
@@ -24,7 +22,6 @@
   </div>
 </ion-content>
 
-<!-- Quiz details: bottom-sheet modal (replaces the old alert) -->
 <ion-modal class="quiz-modal" [isOpen]="isModalOpen" (didDismiss)="closeModal()"
   [initialBreakpoint]="0.42" [breakpoints]="[0, 0.42, 0.8]" [backdropBreakpoint]="0">
   <ng-template>
