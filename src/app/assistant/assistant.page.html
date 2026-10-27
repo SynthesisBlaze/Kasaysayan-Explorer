@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/discover"></ion-back-button>
+    </ion-buttons>
+    <ion-title>History assistant</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="newChat()" [disabled]="busy || !messages.length" aria-label="Clear conversation and start a new chat">
+        New chat
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <main class="chat-layout">
+    <section class="intro" aria-labelledby="assistant-heading">
+      <p class="eyebrow">POWERED BY CLOUDFLARE WORKERS AI</p>
+      <h1 id="assistant-heading">Explore our past, one question at a time.</h1>
+      <p>Ask about Philippine history in English or Filipino, then follow your curiosity.</p>
+      <p class="disclaimer">AI can make mistakes. Verify important facts with reliable historical sources.</p>
+    </section>
+
+    <p *ngIf="authLoading" role="status">Checking your account…</p>
+    <section *ngIf="!authLoading && !signedIn" class="sign-in-card">
+      <h2>Sign in to start a conversation</h2>
+      <p>The assistant requires an account to help keep usage fair.</p>
+      <ion-button routerLink="/tabs/account">Go to account</ion-button>
+    </section>
+
+    <section *ngIf="signedIn && !messages.length" class="suggestions" aria-label="Suggested questions">
+      <h2>Start with a question</h2>
+      <ion-button *ngFor="let suggestion of suggestions" fill="outline" expand="block"
+        [disabled]="busy" (click)="prompt = suggestion">
+        {{ suggestion }}
+      </ion-button>
+    </section>
+
+    <section class="transcript" role="log" aria-label="Conversation" aria-live="polite" [attr.aria-busy]="busy">
+      <article *ngFor="let message of messages" class="message" [class.user-message]="message.role === 'user'">
+        <h2>{{ message.role === 'user' ? 'You' : 'History assistant' }}</h2>
+        <p>{{ message.text }}</p>
+      </article>
+    </section>
+    <p *ngIf="busy" class="pending" role="status">
+      <ion-spinner name="dots" aria-hidden="true"></ion-spinner>
+      Thinking about your question…
+    </p>
+    <p *ngIf="notice" class="notice" role="status">{{ notice }}</p>
+    <p *ngIf="error" class="error-message" role="alert">{{ error }}</p>
+  </main>
+</ion-content>
+
+<ion-footer *ngIf="signedIn">
+  <div class="composer-wrapper">
+    <form (ngSubmit)="send()" class="composer">
+      <ion-textarea name="question" label="Your history question" labelPlacement="stacked"
+        placeholder="What would you like to learn?" [(ngModel)]="prompt" [autoGrow]="true"
+        [maxlength]="messageMax" [counter]="true" [rows]="2" [disabled]="busy"
+        aria-describedby="assistant-privacy"></ion-textarea>
+      <ion-button type="submit" [disabled]="!canSend">{{ busy ? 'Waiting…' : 'Send' }}</ion-button>
+    </form>
+    <p id="assistant-privacy" class="privacy-note">Your question and recent chat are sent to Cloudflare for AI processing. This app does not save the conversation. Do not share personal information.</p>
+  </div>
+</ion-footer>

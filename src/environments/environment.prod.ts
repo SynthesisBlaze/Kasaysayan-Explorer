@@ -2,6 +2,10 @@
 
 export const environment = {
   production: true,
+  assistant: {
+    // Public URL only, never a Cloudflare API token.
+    endpoint: 'https://kasaysayan-history-assistant.kasaysayanexplorer.workers.dev/chat'
+  },
   firebase: {
     apiKey: "AIzaSyCxpAKxBkWJbQqTCU56E9m56sIPSm7nhL8",
     authDomain: "kasaysayan-explorer.firebaseapp.com",

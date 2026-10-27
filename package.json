@@ -9,6 +9,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:assistant": "ng test --watch=false --browsers=ChromeHeadless --ts-config=tsconfig.assistant-spec.json --include=src/app/services/history-assistant.service.spec.ts --include=src/app/assistant/assistant.page.spec.ts",
     "lint": "ng lint"
   },
   "private": true,

@@ -4,6 +4,11 @@
 
 export const environment = {
   production: false,
+  assistant: {
+    // Paste the deployed Cloudflare Worker URL followed by /chat here.
+    // For local Worker development, use http://localhost:8787/chat.
+    endpoint: 'https://kasaysayan-history-assistant.kasaysayanexplorer.workers.dev/chat'
+  },
   firebase: {
     apiKey: "AIzaSyCxpAKxBkWJbQqTCU56E9m56sIPSm7nhL8",
     authDomain: "kasaysayan-explorer.firebaseapp.com",
