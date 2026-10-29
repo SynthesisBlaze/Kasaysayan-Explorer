@@ -1,22 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonicModule, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { register } from 'swiper/element/bundle';
 import { PeriodsService } from '../../services/periods.service';
+
+register();
 
 @Component({
   selector: 'app-historical-periods',
   templateUrl: './historical-periods.page.html',
   styleUrls: ['./historical-periods.page.scss'],
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HistoricalPeriodsPage implements OnInit, OnDestroy {
+  @ViewChild('carousel') carousel?: ElementRef<any>;
+
   periods: any[] = [];
   loading = true;
   loadError = false;
-  searchTerm = '';
-  readonly skeletons = [1, 2, 3, 4, 5, 6];
+  activeIndex = 0;
   private sub?: Subscription;
 
   constructor(
@@ -32,13 +36,6 @@ export class HistoricalPeriodsPage implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
   }
 
-  get filteredPeriods(): any[] {
-    const term = this.searchTerm.trim().toLowerCase();
-    return this.periods
-      .filter((item) => !term || (item.name || '').toLowerCase().includes(term))
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  }
-
   loadPeriods() {
     this.loading = true;
     this.loadError = false;
@@ -46,7 +43,7 @@ export class HistoricalPeriodsPage implements OnInit, OnDestroy {
     setTimeout(() => {
       this.sub = this.periodsService.getPeriods().subscribe({
         next: (data) => {
-          this.periods = data;
+          this.periods = [...data].sort((a, b) => this.startYear(a.date) - this.startYear(b.date));
           this.loading = false;
         },
         error: (err) => {
@@ -58,8 +55,26 @@ export class HistoricalPeriodsPage implements OnInit, OnDestroy {
     }, 0);
   }
 
-  onSearch(event: any) {
-    this.searchTerm = event.detail.value || '';
+  startYear(date: string | undefined): number {
+    const match = (date || '').match(/\d{4}/);
+    if (!match) return Infinity;
+    const year = Number(match[0]);
+    return /^\s*before/i.test(date || '') ? year - 1000 : year;
+  }
+
+  shortYear(date: string | undefined): string {
+    const match = (date || '').match(/\d{4}/);
+    if (!match) return '?';
+    return /^\s*before/i.test(date || '') ? 'Early' : match[0];
+  }
+
+  onSlideChange() {
+    this.activeIndex = this.carousel?.nativeElement.swiper?.activeIndex ?? 0;
+  }
+
+  goTo(index: number) {
+    this.carousel?.nativeElement.swiper?.slideTo(index);
+    this.activeIndex = index;
   }
 
   goBack() {

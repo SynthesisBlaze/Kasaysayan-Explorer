@@ -307,9 +307,9 @@ ion-footer.quiz-footer {
   gap: var(--app-space-3);
 }
 
-.feedback-icon {
-  width: 40px;
-  height: 40px;
+.feedback-icon,
+.stat-icon,
+.mini-badge {
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -324,6 +324,11 @@ ion-footer.quiz-footer {
     background: var(--q-bad-badge);
     color: var(--q-bad-glyph);
   }
+}
+
+.feedback-icon {
+  width: 40px;
+  height: 40px;
 }
 
 .feedback-title {
@@ -429,20 +434,6 @@ ion-footer.quiz-footer {
 .stat-icon {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  flex: none;
-
-  &.ok {
-    background: var(--q-ok-badge);
-    color: var(--q-ok-glyph);
-  }
-
-  &.bad {
-    background: var(--q-bad-badge);
-    color: var(--q-bad-glyph);
-  }
 }
 
 .stat-num {
@@ -513,20 +504,6 @@ ion-footer.quiz-footer {
 .mini-badge {
   width: 30px;
   height: 30px;
-  flex: none;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-
-  &.ok {
-    background: var(--q-ok-badge);
-    color: var(--q-ok-glyph);
-  }
-
-  &.bad {
-    background: var(--q-bad-badge);
-    color: var(--q-bad-glyph);
-  }
 }
 
 .review-text {

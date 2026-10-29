@@ -1,4 +1,4 @@
-<ion-content class="page-bg">
+<ion-content class="page-bg" [scrollY]="true">
   <div class="list-page">
 
     <div class="custom-header">
@@ -7,16 +7,11 @@
       </button>
       <div class="header-text">
         <h1 class="page-title">Historical Periods</h1>
-        <p class="page-count" *ngIf="!loading && !loadError">{{ periods.length }} periods</p>
+        <p class="page-count" *ngIf="!loading && !loadError">Swipe through {{ periods.length }} eras of Philippine history</p>
       </div>
     </div>
 
-    <ion-searchbar class="list-search" placeholder="Search periods" color="light" [debounce]="150"
-      [value]="searchTerm" (ionInput)="onSearch($event)" *ngIf="!loadError"></ion-searchbar>
-
-    <div class="card-grid" *ngIf="loading" role="status" aria-label="Loading periods">
-      <div class="skeleton-block card-skeleton" *ngFor="let s of skeletons"></div>
-    </div>
+    <div class="skeleton-block slide-skeleton" *ngIf="loading" role="status" aria-label="Loading periods"></div>
 
     <div class="state-message" *ngIf="!loading && loadError">
       <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
@@ -25,26 +20,49 @@
       <ion-button fill="outline" (click)="loadPeriods()">Try again</ion-button>
     </div>
 
-    <div class="state-message" *ngIf="!loading && !loadError && filteredPeriods.length === 0">
-      <ion-icon [name]="searchTerm ? 'search-outline' : 'time-outline'" aria-hidden="true"></ion-icon>
-      <h3>{{ searchTerm ? 'No matches' : 'Nothing here yet' }}</h3>
-      <p *ngIf="searchTerm">No periods match "{{ searchTerm }}".</p>
-    </div>
+    <ng-container *ngIf="!loading && !loadError && periods.length">
+      <nav class="timeline" aria-label="Jump to period">
+        <button type="button" class="timeline-stop" *ngFor="let period of periods; let i = index"
+          [class.active]="i === activeIndex" [class.past]="i < activeIndex"
+          [attr.aria-current]="i === activeIndex ? 'step' : null"
+          [attr.aria-label]="period.name + ', ' + period.date" (click)="goTo(i)">
+          <span class="dot"></span>
+          <span class="year">{{ shortYear(period.date) }}</span>
+        </button>
+      </nav>
 
-    <div class="card-grid" *ngIf="!loading && !loadError">
-      <div
-        class="item-card tappable"
-        role="button"
-        tabindex="0"
-        *ngFor="let period of filteredPeriods"
-        [attr.aria-label]="period.name"
-        (click)="openPeriod(period.id)"
-        (keydown.enter)="openPeriod(period.id)"
-        [style.background-image]="'url(' + period.imgPath + ')'"
-      >
-        <div class="item-title">{{ period.name }}</div>
+      <swiper-container #carousel class="carousel" slides-per-view="1.08" space-between="12" centered-slides="true"
+        keyboard="true" (swiperslidechange)="onSlideChange()">
+        <swiper-slide *ngFor="let period of periods; let i = index">
+          <article class="era-card" [attr.aria-label]="'Period ' + (i + 1) + ' of ' + periods.length + ': ' + period.name">
+            <div class="era-image" [style.background-image]="'url(' + period.imgPath + ')'">
+              <span class="era-step">{{ i + 1 }} / {{ periods.length }}</span>
+            </div>
+            <div class="era-body">
+              <span class="era-date">{{ period.date }}</span>
+              <h2 class="era-name">{{ period.name }}</h2>
+              <p class="era-summary">{{ period.description }}</p>
+              <button type="button" class="era-cta" (click)="openPeriod(period.id)">
+                Read the full story
+                <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+              </button>
+            </div>
+          </article>
+        </swiper-slide>
+      </swiper-container>
+
+      <div class="pager">
+        <button type="button" class="icon-btn pager-btn" aria-label="Previous period"
+          [disabled]="activeIndex === 0" (click)="goTo(activeIndex - 1)">
+          <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+        </button>
+        <span class="pager-label">{{ periods[activeIndex]?.name }}</span>
+        <button type="button" class="icon-btn pager-btn" aria-label="Next period"
+          [disabled]="activeIndex === periods.length - 1" (click)="goTo(activeIndex + 1)">
+          <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+        </button>
       </div>
-    </div>
+    </ng-container>
 
   </div>
 </ion-content>

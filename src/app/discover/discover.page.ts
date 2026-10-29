@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { PeriodsService } from '../services/periods.service';
 import { EventsService } from '../services/events.service';
@@ -26,6 +26,28 @@ export class DiscoverPage implements OnInit, OnDestroy {
   currentPeriodIndex = 0;
   private isNavigating = false;
   private subscriptions: Subscription[] = [];
+
+  @ViewChild('periodsCarousel') periodsCarousel?: ElementRef<any>;
+  private readonly reduceMotion = typeof window !== 'undefined'
+    && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  private autoplayStoppedOnLeave = false;
+
+  ionViewDidEnter() {
+    if (this.reduceMotion) {
+      this.periodsCarousel?.nativeElement.swiper?.autoplay?.stop();
+    } else if (this.autoplayStoppedOnLeave) {
+      this.periodsCarousel?.nativeElement.swiper?.autoplay?.start();
+      this.autoplayStoppedOnLeave = false;
+    }
+  }
+
+  ionViewWillLeave() {
+    const autoplay = this.periodsCarousel?.nativeElement.swiper?.autoplay;
+    if (autoplay?.running) {
+      autoplay.stop();
+      this.autoplayStoppedOnLeave = true;
+    }
+  }
 
   quickLinks = [
     { label: 'Periods', icon: 'time', route: '/historical-periods' },
